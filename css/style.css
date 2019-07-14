@@ -18,6 +18,7 @@ body {
 }
 
 .popup {
+  background-color: white;
   border-radius: 15px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
   text-align: center;
@@ -36,10 +37,27 @@ body {
   padding: 30px;
 }
 
+.popup-background {
+  background-color: rgba(0, 0, 0, .5);
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.popup-message {
+  height: auto;
+  padding: 80px 50px;
+  width: 700px;
+}
+
 .title {
   color: #00b496;
   font-family: 'Luckiest Guy', cursive;
   font-size: 60px;
+  letter-spacing: 3px;
   display: block;
   text-align: center;
   margin-bottom: 50px;
@@ -50,11 +68,15 @@ body {
   border-radius: 10px;
   background: #00b496;
   color: white;
-  font-family: 'Luckiest Guy', cursive;
+  font-family: 'Fredoka One', cursive;
   font-size: 30px;
   padding: 15px 35px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+}
+
+.button-red {
+  background: #cf0c0c;
 }
 
 .button:hover {
@@ -69,25 +91,16 @@ body {
 
 .input {
   border-radius: 5px;
-  font-family: Ubuntu, sans-serif;
+  font-family: 'Fredoka One', cursive;
   font-size: 25px;
   padding: 10px;
   margin-bottom: 150px;
 }
 
-#register-form {
-  
-}
-
-#register-form label {
-  
-}
-
-#register-form input {
-  
-}
-
-#register-form button[type="submit"] {
+.message {
+  font-size: 35px;
+  font-family: 'Fredoka One', cursive;
+  margin-bottom: 50px;
 }
 
 #available-user {
@@ -112,8 +125,7 @@ body {
 
 .user-list-row-left {
   font-size: 35px;
-  font-family: Ubuntu, sans-serif;
-  font-weight: bold;
+  font-family: 'Fredoka One', cursive;
   text-align: left;
   width: 70%;
 }
@@ -124,4 +136,18 @@ body {
 
 .user-list-row-right button {
   font-size: 20px;
+}
+
+/* UTILITY CLASSES */
+.m-l-sm {
+  margin-left: 10px;
+}
+.m-l-md {
+  margin-left: 20px;
+}
+.m-r-sm {
+  margin-right: 10px;
+}
+.m-r-md {
+  margin-right: 20px;
 }

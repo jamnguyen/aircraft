@@ -6,9 +6,9 @@
     <title>Aircraft</title>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="./css/style.css">
-    <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy|Ubuntu:400,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Fredoka+One|Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./vendor/icofont/icofont.min.css">
-    <script src="/js/SocketIO/socket.io.js"></script>
+    <script src="./vendor/SocketIO/socket.io.js"></script>
   </head>
 
   <body>
@@ -21,6 +21,33 @@
     <div id="available-user" class="popup" style="display: none">
       <div class="title">Available Users</div>
       <div id="user-list" class="user-list"></div>
+    </div>
+    <div id="challenging-message" class="popup-background" style="display: none">
+      <div class="popup popup-message">
+        <p class="message">Waiting for opponent's response...</p>
+        <button class="button button-red" type="button">Cancel</button>
+      </div>
+    </div>
+    <div id="challenging-reject" class="popup-background" style="display: none">
+      <div class="popup popup-message">
+        <p class="message"></p>
+        <button class="button" type="button">Close</button>
+      </div>
+    </div>
+    <div id="challenging-cancel" class="popup-background" style="display: none">
+      <div class="popup popup-message">
+        <p class="message"></p>
+        <button class="button" type="button">Close</button>
+      </div>
+    </div>
+    <div id="challenging-question" class="popup-background" style="display: none">
+      <div class="popup popup-message">
+        <p class="message"></p>
+        <div class="button-group">
+          <button id="accept-btn" class="button m-r-md" type="button">Accept</button>
+          <button id="reject-btn" class="button button-red" type="button">Reject</button>
+        </div>
+      </div>
     </div>
     <script type="module" src="./js/script.js"></script>
   </body>
