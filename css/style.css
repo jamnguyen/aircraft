@@ -2,18 +2,76 @@
   margin: 0;
   padding: 0;
 }
+*:active,
+*:focus {
+  outline: none;
+}
 
 html, body {
   height: 100vh;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 body {
   position: relative;
 }
 
-#send-btn {
-  left: 100px;
+#register-form {
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
   position: absolute;
-  top: 100px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 70%;
+  width: 500px;
+  padding: 30px;
+}
+
+#register-form label {
+  color: #00b496;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 60px;
+  display: block;
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+#register-form input {
+  /* border: 1px solid lightgray; */
+  border-radius: 5px;
+  font-family: Ubuntu, sans-serif;
+  font-size: 25px;
+  padding: 10px;
+  margin-bottom: 150px;
+}
+
+#register-form button[type="submit"] {
+  border: none;
+  border-radius: 10px;
+  background: #00b496;
+  color: white;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 30px;
+  padding: 15px 35px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+#register-form button[type="submit"]:hover {
+  box-shadow: 0 10px 10px rgba(0, 0, 0, .2);
+  transform: translateY(-3px) scale(1.02);
+}
+
+#register-form button[type="submit"]:active {
+  box-shadow: 0 5px 5px rgba(0, 0, 0, .3);
+  transform: translateY(-1px) scale(1);
 }

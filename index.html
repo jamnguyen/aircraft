@@ -6,12 +6,18 @@
     <title>Aircraft</title>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy|Ubuntu:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./vendor/icofont/icofont.min.css">
     <script src="/js/SocketIO/socket.io.js"></script>
   </head>
 
   <body>
     <canvas id="canvas"></canvas>
-    <button id="send-btn">Send Time</button>
+    <form id="register-form">
+      <label for="name-input">You are</label>
+      <input type="text" name="name-input" id="name-input" placeholder="Your name">
+      <button type="submit">Enter the game <i class="icofont-arrow-right"></i></button>
+    </form>
     <script type="module" src="./js/script.js"></script>
   </body>
 

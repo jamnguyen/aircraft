@@ -6,6 +6,9 @@ import Utilities from './Utilities/utilities.js';
 // --------------------------------------------------
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
+let currentUser = {
+  username: 'User'
+};
 
 
 
@@ -17,23 +20,17 @@ window.addEventListener(
   'resize',
   () => Utilities.handleResizeWindow(canvas)
 );
-
-
-
-// Socket IO test
-var nickname = 'JamNguyen';
-var socket = io(`http://localhost:3000?username=${nickname}`);
-
-socket.on(MESSAGE.UPDATE_USER_LIST, (users) => {
-  console.log(users);
-});
-
-const onSend = () => {
-  socket.emit('client message', new Date().toTimeString());
-  return false;
-}
-
-document.getElementById('send-btn').addEventListener(
-  'click',
-  onSend
+// Setup user
+var registerForm = document.getElementById('register-form');
+registerForm.addEventListener(
+  'submit',
+  (e) => {
+    e.preventDefault();
+    currentUser.username = document.getElementById('name-input').value;
+    if (!currentUser.username) {
+      return;
+    }
+    registerForm.style.display = 'none';
+    Utilities.setupSocket(currentUser.username);
+  }
 );
