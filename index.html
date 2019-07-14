@@ -13,11 +13,15 @@
 
   <body>
     <canvas id="canvas"></canvas>
-    <form id="register-form">
-      <label for="name-input">You are</label>
-      <input type="text" name="name-input" id="name-input" placeholder="Your name">
-      <button type="submit">Enter the game <i class="icofont-arrow-right"></i></button>
+    <form id="register-form" class="popup">
+      <label class="title" for="name-input">You are</label>
+      <input class="input" type="text" name="name-input" id="name-input" placeholder="Your name">
+      <button class="button" type="submit">Enter the game <i class="icofont-arrow-right"></i></button>
     </form>
+    <div id="available-user" class="popup" style="display: none">
+      <div class="title">Available Users</div>
+      <div id="user-list" class="user-list"></div>
+    </div>
     <script type="module" src="./js/script.js"></script>
   </body>
 
