@@ -9,38 +9,39 @@
     <link href="https://fonts.googleapis.com/css?family=Fredoka+One|Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./vendor/icofont/icofont.min.css">
     <script src="./vendor/SocketIO/socket.io.js"></script>
+    <script src="https://unpkg.com/rxjs@6.5.2/bundles/rxjs.umd.min.js"></script>
   </head>
 
   <body>
     <canvas id="canvas"></canvas>
-    <form id="register-form" class="popup">
+    <form id="register-form" class="popup hidden">
       <label class="title" for="name-input">You are</label>
       <input class="input" type="text" name="name-input" id="name-input" placeholder="Your name">
       <button class="button" type="submit">Enter the game <i class="icofont-arrow-right"></i></button>
     </form>
-    <div id="available-user" class="popup" style="display: none">
+    <div id="available-users" class="popup hidden">
       <div class="title">Available Users</div>
       <div id="user-list" class="user-list"></div>
     </div>
-    <div id="challenging-message" class="popup-background" style="display: none">
+    <div id="challenging-message" class="popup-background hidden">
       <div class="popup popup-message">
         <p class="message">Waiting for opponent's response...</p>
         <button class="button button-red" type="button">Cancel</button>
       </div>
     </div>
-    <div id="challenging-reject" class="popup-background" style="display: none">
+    <div id="challenging-reject" class="popup-background hidden">
       <div class="popup popup-message">
         <p class="message"></p>
         <button class="button" type="button">Close</button>
       </div>
     </div>
-    <div id="challenging-cancel" class="popup-background" style="display: none">
+    <div id="challenging-cancel" class="popup-background hidden">
       <div class="popup popup-message">
         <p class="message"></p>
         <button class="button" type="button">Close</button>
       </div>
     </div>
-    <div id="challenging-question" class="popup-background" style="display: none">
+    <div id="challenging-question" class="popup-background hidden">
       <div class="popup popup-message">
         <p class="message"></p>
         <div class="button-group">

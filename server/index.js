@@ -9,13 +9,16 @@ app.get('/', (req, res) => {
 // IO functions
 var users = [];   // { id, username }
 const MESSAGE = {
-  ATTACK: 'ATTACK',
-  UNDER_ATTACK: 'UNDER_ATTACK',
-  UPDATE_USER_LIST: 'UPDATE_USER_LIST',
-  LOGIN: 'LOGIN',
-  CHALLENGE: 'CHALLENGE',
-  CHALLENGE_CANCEL: 'CHALLENGE_CANCEL',
-  CHALLENGE_RESPONSE: 'CHALLENGE_RESPONSE',
+  // STATE USER SELECT
+  US_LOGIN: 'LOGIN',
+  US_CHALLENGE: 'US_CHALLENGE',
+  US_CHALLENGE_CANCEL: 'US_CHALLENGE_CANCEL',
+  US_CHALLENGE_RESPONSE: 'US_CHALLENGE_RESPONSE',
+  US_UPDATE_USER_LIST: 'US_UPDATE_USER_LIST',
+
+  // STATE IN GAME
+  IG_ATTACK: 'IG_ATTACK',
+  IG_UNDER_ATTACK: 'IG_UNDER_ATTACK',
 }
 const STATUS = {
   AVAILABLE: 'AVAILABLE',
@@ -32,7 +35,7 @@ io.on('connection', (socket) => {
 
   // Send to connected user id and available users list
   io.to(`${socket.id}`).emit(
-    MESSAGE.LOGIN,
+    MESSAGE.US_LOGIN,
     {
       currentUser: {
         id:  socket.id,
@@ -44,7 +47,7 @@ io.on('connection', (socket) => {
 
   // Send to other users available users list
   socket.broadcast.emit(
-    MESSAGE.UPDATE_USER_LIST,
+    MESSAGE.US_UPDATE_USER_LIST,
     users.filter(user => user.status === STATUS.AVAILABLE)
   );
 
@@ -65,11 +68,11 @@ io.on('connection', (socket) => {
 
     // Send to other users available users list
     users.splice(removeIndex, 1);
-    io.emit(MESSAGE.UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
+    io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
 
   // User request a game with user has opponentId
-  socket.on(MESSAGE.CHALLENGE, (opponentId) => {
+  socket.on(MESSAGE.US_CHALLENGE, (opponentId) => {
     const challenger = users.find(user => user.id === socket.id);
     const opponent = users.find(user => user.id === opponentId);
 
@@ -77,15 +80,15 @@ io.on('connection', (socket) => {
     opponent.status = STATUS.CHALLENGING;
 
     io.to(`${opponentId}`).emit(
-      MESSAGE.CHALLENGE,
+      MESSAGE.US_CHALLENGE,
       challenger
     );
 
-    io.emit(MESSAGE.UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
+    io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
 
   // User cancel game request with user has opponentId
-  socket.on(MESSAGE.CHALLENGE_CANCEL, (opponentId) => {
+  socket.on(MESSAGE.US_CHALLENGE_CANCEL, (opponentId) => {
     const challenger = users.find(user => user.id === socket.id);
     const opponent = users.find(user => user.id === opponentId);
 
@@ -93,15 +96,15 @@ io.on('connection', (socket) => {
     opponent.status = STATUS.AVAILABLE;
 
     io.to(`${opponentId}`).emit(
-      MESSAGE.CHALLENGE_CANCEL,
+      MESSAGE.US_CHALLENGE_CANCEL,
       challenger
     );
 
-    io.emit(MESSAGE.UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
+    io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
 
   // User response to a challenge
-  socket.on(MESSAGE.CHALLENGE_RESPONSE, (challengerId, answer) => {
+  socket.on(MESSAGE.US_CHALLENGE_RESPONSE, (challengerId, answer) => {
     const challenger = users.find(user => user.id === challengerId);
     const opponent = users.find(user => user.id === socket.id);
   
@@ -114,12 +117,12 @@ io.on('connection', (socket) => {
     }
 
     io.to(`${challenger.id}`).emit(
-      MESSAGE.CHALLENGE_RESPONSE,
+      MESSAGE.US_CHALLENGE_RESPONSE,
       answer,
       opponent
     );
 
-    io.emit(MESSAGE.UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
+    io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
 });
 

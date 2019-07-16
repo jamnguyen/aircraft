@@ -103,7 +103,7 @@ body {
   margin-bottom: 50px;
 }
 
-#available-user {
+#available-users {
   justify-content: start;
   padding: 50px;
   width: 800px;
@@ -150,4 +150,8 @@ body {
 }
 .m-r-md {
   margin-right: 20px;
+}
+
+.hidden {
+  display: none;
 }

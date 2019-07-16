@@ -4,13 +4,29 @@ import Utilities from './Utilities/utilities.js';
 export default class MySocket {
   socket;
   currentUser;
+  opponentUser;
   users;
-  state;
+  game;
 
-  constructor(username) {
+  constructor(username, gameManager) {
     this.socket = io(`${SERVER.URL}?username=${username}`);
-    this.state = STATE.USER_SELECT;
+    this.game = gameManager;
+  }
 
+  stopListeningOnState(state) {
+    if (state === STATE.USER_SELECT) {
+      this.socket.removeAllListeners(MESSAGE.US_LOGIN);
+      this.socket.removeAllListeners(MESSAGE.US_CHALLENGE);
+      this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_CANCEL);
+      this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_RESPONSE);
+      this.socket.removeAllListeners(MESSAGE.US_UPDATE_USER_LIST);
+    }
+  }
+
+  // ----------------------------------------------------------------------------------
+  // STATE USER SELECT
+  // ----------------------------------------------------------------------------------
+  setupStateUserSelect() {
     this.handleLogin();
     this.handleUpdateUserList();
     this.handleChallengeRequest();
@@ -19,58 +35,54 @@ export default class MySocket {
   }
 
   handleLogin() {
-    let availableUserDiv = document.getElementById('available-user');
-    this.socket.on(MESSAGE.LOGIN, (res) => {
+    let availableUserDiv = document.getElementById('available-users');
+    this.socket.on(MESSAGE.US_LOGIN, (res) => {
       this.currentUser = res.currentUser;
       this.users = res.users;
-      if (this.state === STATE.USER_SELECT) {
-        availableUserDiv.style.display = 'block';
-        Utilities.renderAvailableUsers(
-          this.users.filter(user => user.id !== this.currentUser.id),
-          (user) => {
-            this.challenge(user.id);
-          }
-        );
-      }
-    });
-  }
-
-  handleUpdateUserList() {
-    let availableUserDiv = document.getElementById('available-user');
-    this.socket.on(MESSAGE.UPDATE_USER_LIST, (availUsers) => {
-      this.users = availUsers;
-      if (this.state === STATE.USER_SELECT) {
-        availableUserDiv.style.display = 'block';
-        Utilities.renderAvailableUsers(
-          this.users.filter(user => user.id !== this.currentUser.id),
-          (user) => {
-            this.challenge(user.id);
-          }
-        );
-      }
+      availableUserDiv.classList.remove('hidden');
+      Utilities.renderAvailableUsers(
+        this.users.filter(user => user.id !== this.currentUser.id),
+        (user) => {
+          this.challenge(user.id);
+        }
+      );
     });
   }
 
   challenge(opponentId) {
     let messageBox = document.getElementById('challenging-message');
-    messageBox.style.display = 'block';
+    messageBox.classList.remove('hidden');
 
-    this.socket.emit(MESSAGE.CHALLENGE, opponentId);
+    this.socket.emit(MESSAGE.US_CHALLENGE, opponentId);
     let cancelButton = messageBox.getElementsByTagName('button')[0];
     cancelButton.addEventListener('click', () => this.cancelRequest(opponentId));
   }
 
   cancelRequest(opponentId) {
     let messageBox = document.getElementById('challenging-message');
-    messageBox.style.display = 'none';
+    messageBox.classList.add('hidden');
 
-    this.socket.emit(MESSAGE.CHALLENGE_CANCEL, opponentId);
+    this.socket.emit(MESSAGE.US_CHALLENGE_CANCEL, opponentId);
+  }
+
+  handleUpdateUserList() {
+    let availableUserDiv = document.getElementById('available-users');
+    this.socket.on(MESSAGE.US_UPDATE_USER_LIST, (availUsers) => {
+      this.users = availUsers;
+      availableUserDiv.classList.remove('hidden');
+      Utilities.renderAvailableUsers(
+        this.users.filter(user => user.id !== this.currentUser.id),
+        (user) => {
+          this.challenge(user.id);
+        }
+      );
+    });
   }
 
   handleChallengeRequest() {
-    this.socket.on(MESSAGE.CHALLENGE, (challenger) => {
+    this.socket.on(MESSAGE.US_CHALLENGE, (challenger) => {
       let messageBox = document.getElementById('challenging-question');
-      messageBox.style.display = 'block';
+      messageBox.classList.remove('hidden');
       let message = messageBox.getElementsByClassName('message')[0];
       message.innerHTML = `${challenger.username} is challenging you to a game`;
       
@@ -78,50 +90,56 @@ export default class MySocket {
       let rejectButton = document.getElementById('reject-btn');
 
       acceptButton.addEventListener('click', () => {
-        this.socket.emit(MESSAGE.CHALLENGE_RESPONSE, challenger.id, true);
-        messageBox.style.display = 'none';
+        this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, true);
+        messageBox.classList.add('hidden');
         // GAME ON
-        this.state = STATE.IN_GAME;
+        this.opponentUser = challenger;
+        document.getElementById('available-users').classList.add('hidden');
+        this.stopListeningOnState(STATE.USER_SELECT);
+        this.game.setState(STATE.IN_GAME);
       });
       rejectButton.addEventListener('click', () => {
-        this.socket.emit(MESSAGE.CHALLENGE_RESPONSE, challenger.id, false);
-        messageBox.style.display = 'none';
+        this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, false);
+        messageBox.classList.add('hidden');
       });
     });
   }
 
   handleChallengeReponse() {
-    this.socket.on(MESSAGE.CHALLENGE_RESPONSE, (answer, opponent) => {
+    this.socket.on(MESSAGE.US_CHALLENGE_RESPONSE, (answer, opponent) => {
       let messageBox = document.getElementById('challenging-message');
-      messageBox.style.display = 'none';
+      messageBox.classList.add('hidden');
       
       if (answer) {
         // GAME ON
-        this.state = STATE.IN_GAME;
+        this.opponentUser = opponent;
+        document.getElementById('available-users').classList.add('hidden');
+        this.stopListeningOnState(STATE.USER_SELECT);
+        this.game.setState(STATE.IN_GAME);
       } else {
         messageBox = document.getElementById('challenging-reject');
-        messageBox.style.display = 'block';
+        messageBox.classList.remove('hidden');
         let message = messageBox.getElementsByClassName('message')[0];
         message.innerHTML = `${opponent.username} has rejected your challenge`;
         let closeButton = messageBox.getElementsByTagName('button')[0];
         closeButton.addEventListener('click', () => {
-          messageBox.style.display = 'none';
+          messageBox.classList.add('hidden');
         });
       }
     });
   }
 
   handleChallengeCancel() {
-    this.socket.on(MESSAGE.CHALLENGE_CANCEL, (challenger) => {
+    this.socket.on(MESSAGE.US_CHALLENGE_CANCEL, (challenger) => {
       let messageBox = document.getElementById('challenging-question');
-      messageBox.style.display = 'none';
+      messageBox.classList.add('hidden');
       messageBox = document.getElementById('challenging-cancel');
-      messageBox.style.display = 'block';
+      messageBox.classList.remove('hidden');
       let message = messageBox.getElementsByClassName('message')[0];
       message.innerHTML = `${challenger.username} has canceled the challenge`;
       let closeButton = messageBox.getElementsByTagName('button')[0];
       closeButton.addEventListener('click', () => {
-        messageBox.style.display = 'none';
+        messageBox.classList.add('hidden');
       });
     });
   }
