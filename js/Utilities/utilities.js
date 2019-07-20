@@ -2,11 +2,6 @@ import { SERVER, MESSAGE } from '../Config/config.js';
 
 export default class Utilities {
 
-  static handleResizeWindow(canvas) {
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
-  }
-
   static renderAvailableUsers(users, challengeCallback) {
     let userListDiv = document.getElementById('user-list');
     userListDiv.innerHTML = '';
@@ -30,4 +25,12 @@ export default class Utilities {
       userListDiv.appendChild(row);
     }
   }
+
+
+  // --------------------------------------------------------------------
+  // IN GAME FUNCTIONS
+  // --------------------------------------------------------------------
+  
+
+
 }

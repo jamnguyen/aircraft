@@ -13,7 +13,24 @@
   </head>
 
   <body>
-    <canvas id="canvas"></canvas>
+    <div id="in-game" class="hidden">
+      <div id="board-player" class="board">
+        <div class="board-info">
+          <div class="board-info-name">Player 1</div>
+          <div class="board-info-lives">Lives: <span class="highlight-red">3</span></div>
+        </div>
+        <canvas id="canvas-player" class="board-canvas"></canvas>
+      </div>
+      <div id="board-opponent" class="board hidden">
+        <div class="board-info">
+            <div class="board-info-name">Player 2</div>
+            <div class="board-info-lives">Lives: <span class="highlight-red">2</span></div>
+        </div>
+        <canvas id="canvas-opponent" class="board-canvas"></canvas>
+      </div>
+    </div>
+
+
     <form id="register-form" class="popup hidden">
       <label class="title" for="name-input">You are</label>
       <input class="input" type="text" name="name-input" id="name-input" placeholder="Your name">

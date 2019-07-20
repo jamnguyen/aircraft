@@ -96,7 +96,7 @@ export default class MySocket {
         this.opponentUser = challenger;
         document.getElementById('available-users').classList.add('hidden');
         this.stopListeningOnState(STATE.USER_SELECT);
-        this.game.setState(STATE.IN_GAME);
+        this.game.setState(STATE.IN_GAME_SETUP);
       });
       rejectButton.addEventListener('click', () => {
         this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, false);
@@ -115,7 +115,7 @@ export default class MySocket {
         this.opponentUser = opponent;
         document.getElementById('available-users').classList.add('hidden');
         this.stopListeningOnState(STATE.USER_SELECT);
-        this.game.setState(STATE.IN_GAME);
+        this.game.setState(STATE.IN_GAME_SETUP);
       } else {
         messageBox = document.getElementById('challenging-reject');
         messageBox.classList.remove('hidden');

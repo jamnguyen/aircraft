@@ -1,5 +1,7 @@
-import { MESSAGE, SERVER, STATE } from './Config/config.js';
+import { MESSAGE, SERVER, STATE, UI_BOARD } from './Config/config.js';
 import MySocket from './socket.js';
+import Utilities from './Utilities/utilities.js';
+import Board from './board.js';
 
 export default class GameManager {
   socket;
@@ -7,9 +9,10 @@ export default class GameManager {
   state;
   stateHandler;   // Type Subject
   gameConfig;
+  boardPlayer;
+  boardOpponent;
 
   constructor(context) {
-    this.ctx = context;
   }
 
   start() {
@@ -22,12 +25,12 @@ export default class GameManager {
         this.handleStateLogin();
       } else if (state === STATE.USER_SELECT) {
         this.handleStateUserSelect();
-      } else if (state === STATE.IN_GAME) {
-        this.handleStateInGame();
+      } else if (state === STATE.IN_GAME_SETUP) {
+        this.handleStateInGameSetup();
       }
     });
 
-    this.stateHandler.next(STATE.LOGIN);
+    this.stateHandler.next(STATE.IN_GAME_SETUP);
   }
 
   setState(state) {
@@ -56,11 +59,28 @@ export default class GameManager {
     this.socket.setupStateUserSelect();
   }
 
-  handleStateInGame() {
+  handleStateInGameSetup() {
+    // this.gameConfig = {
+    //   user: this.socket.currentUser,
+    //   opponent: this.socket.opponentUser
+    // }
     this.gameConfig = {
-      user: this.socket.currentUser,
-      opponent: this.socket.opponentUser
+      user: {
+        username: 'Player 1'
+      },
+      opponent: {
+        username: 'Player 2'
+      }
     }
+    let gameContainer = document.getElementById('in-game');
+    gameContainer.classList.remove('hidden');
+    let canvas = document.getElementById('canvas-player');
+    canvas.height = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
+    canvas.width = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
+    this.boardPlayer = new Board(canvas);
+    this.boardPlayer.drawBoard();
+    this.boardPlayer.drawPlanes();
+
     console.log('gameConfig', this.gameConfig);
   }
 }

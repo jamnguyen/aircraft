@@ -18,5 +18,28 @@ export const SERVER = {
 export const STATE = {
   LOGIN: 'LOGIN',
   USER_SELECT: 'USER_SELECT',
-  IN_GAME: 'IN_GAME'
+  IN_GAME: 'IN_GAME',
+  IN_GAME_SETUP: 'IN_GAME_SETUP',
+}
+
+// UI CONFIG
+export const UI_BOARD = {
+  CELL_SIZE: 60,
+  BOARD_SIZE: 12,
+  STROKE_WIDTH: 1,
+  STROKE_COLOR: '#000',
+  INDICATOR_FONT: '20px Trebuchet MS',
+  PLANE_COLOR: 'white',
+  PLANE_BORDER_COLOR: 'white',
+  PLANE_DEAD_COLOR: 'rgb(100, 100, 100, 1)',
+  PLANE_DEAD_BORDER_COLOR: 'rgb(100, 100, 100, 1)',
+  PLANE_STROKE_WIDTH: 5,
+  PLANE_PADDING: 8,
+}
+
+export const DIRECTION = {
+  UP: 'UP',
+  DOWN: 'DOWN',
+  LEFT: 'LEFT',
+  RIGHT: 'RIGHT'
 }
