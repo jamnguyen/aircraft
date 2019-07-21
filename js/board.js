@@ -1,4 +1,4 @@
-import { UI_BOARD, DIRECTION, POSITION_TYPE } from './Config/config.js';
+import { UI_BOARD, DIRECTION, POSITION_TYPE, PLANE_MATRIX } from './Config/config.js';
 
 export default class Board {
   canvas;
@@ -57,10 +57,66 @@ export default class Board {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    this.planes = [];
+    this.bullets = [];
   }
 
   clean() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  setPlaneInfo(index, info) {
+    if(!this.planes[index]) {
+      return;
+    }
+    this.planes[index] = {
+      ...this.planes[index],
+      ...info
+    }
+  }
+
+  isOutside(headX, headY, direction) {
+    if (direction === DIRECTION.UP) {
+      return (headX - 2) < 1 || (headX + 2) > (UI_BOARD.BOARD_SIZE - 2) || headY < 1 || (headY + 3) > (UI_BOARD.BOARD_SIZE - 2);
+    } else if (direction === DIRECTION.DOWN) {
+      return (headX - 2) < 1 || (headX + 2) > (UI_BOARD.BOARD_SIZE - 2) || headY > (UI_BOARD.BOARD_SIZE - 2) || (headY - 3) < 1;
+    } else if (direction === DIRECTION.RIGHT) {
+      return headX > (UI_BOARD.BOARD_SIZE - 2) || (headX - 3) < 1 || (headY - 2) < 1 || (headY + 2) > (UI_BOARD.BOARD_SIZE - 2);
+    } else if (direction === DIRECTION.LEFT) {
+      return (headX + 3) > (UI_BOARD.BOARD_SIZE - 2) || headX < 1 || (headY - 2) < 1 || (headY + 2) > (UI_BOARD.BOARD_SIZE - 2);
+    }
+    return false;
+  }
+
+  hasOverlapped() {
+    let points = [];
+    for (let i = 0; i < 10; i++) {
+      for (let plane of this.planes) {
+        const point = this.getPlanePoint(plane, i);
+        const duplicatedIndex = points.findIndex(e => e.x === point.x && e.y === point.y);
+        if (duplicatedIndex >= 0) {
+          return true;
+        }
+        points.push(point);
+      }
+    }
+    return false;
+  }
+
+  getPlanePoint(plane, index) {
+    const { headX, headY, direction } = plane;
+    return {
+      x: PLANE_MATRIX[direction][index].x + headX,
+      y: PLANE_MATRIX[direction][index].y + headY
+    };
+
+  }
+
+  draw() {
+    this.clean();
+    this.drawBoard();
+    this.drawPlanes();
+    this.drawBullets();
   }
 
   drawBoard() {

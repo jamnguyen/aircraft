@@ -2,6 +2,15 @@ import { SERVER, MESSAGE } from '../Config/config.js';
 
 export default class Utilities {
 
+  static ranged(value, min, max) {
+    if (value < min) {
+      return min;
+    } else if (value > max) {
+      return max;
+    }
+    return value;
+  }
+
   static renderAvailableUsers(users, challengeCallback) {
     let userListDiv = document.getElementById('user-list');
     userListDiv.innerHTML = '';
