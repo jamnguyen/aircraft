@@ -1,30 +1,57 @@
-import { UI_BOARD, DIRECTION } from './Config/config.js';
+import { UI_BOARD, DIRECTION, POSITION_TYPE } from './Config/config.js';
 
 export default class Board {
   canvas;
   ctx;
   planes = [
-    {
-      headX: 3,
-      headY: 1,
-      direction: DIRECTION.UP,
-      color: 'rgba(0, 255, 255, 1)',
-      dead: true
-    },
-    {
-      headX: 5,
-      headY: 6,
-      direction: DIRECTION.DOWN,
-      color: 'rgba(0, 255, 0, 1)',
-      dead: false
-    },
-    {
-      headX: 7,
-      headY: 8,
-      direction: DIRECTION.LEFT,
-      color: 'rgba(255, 0, 0, .5)',
-      dead: false
-    },
+    // {
+    //   headX: 3,
+    //   headY: 1,
+    //   direction: DIRECTION.UP,
+    //   color: 'rgba(0, 255, 255, 1)',
+    //   dead: true
+    // },
+    // {
+    //   headX: 5,
+    //   headY: 6,
+    //   direction: DIRECTION.DOWN,
+    //   color: 'rgba(0, 255, 0, 1)',
+    //   dead: false
+    // },
+    // {
+    //   headX: 7,
+    //   headY: 8,
+    //   direction: DIRECTION.LEFT,
+    //   color: 'rgba(255, 0, 0, 1)',
+    //   dead: false
+    // },
+  ];
+  bullets = [
+    // {
+    //   x: 3,
+    //   y: 3,
+    //   type: POSITION_TYPE.BODY
+    // },
+    // {
+    //   x: 5,
+    //   y: 5,
+    //   type: POSITION_TYPE.BODY
+    // },
+    // {
+    //   x: 8,
+    //   y: 8,
+    //   type: POSITION_TYPE.BODY
+    // },
+    // {
+    //   x: 7,
+    //   y: 3,
+    //   type: POSITION_TYPE.BOARD
+    // },
+    // {
+    //   x: 3,
+    //   y: 1,
+    //   type: POSITION_TYPE.HEAD
+    // }
   ]
 
   constructor(canvas) {
@@ -76,17 +103,14 @@ export default class Board {
         this.ctx.translate(plane.headX * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2, plane.headY * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2);
         this.drawPlane(-1, -1, plane);
       } else if (plane.direction === DIRECTION.DOWN) {
-        this.ctx.save();
         this.ctx.translate(plane.headX * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2, plane.headY * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2);
         this.ctx.rotate(180 * Math.PI / 180);
         this.drawPlane(1, 1, plane);
       } else if (plane.direction === DIRECTION.LEFT) {
-        this.ctx.save();
         this.ctx.translate(plane.headX * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2, plane.headY * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2);
         this.ctx.rotate(-90 * Math.PI / 180);
         this.drawPlane(1, -1, plane);
       } else if (plane.direction === DIRECTION.RIGHT) {
-        this.ctx.save();
         this.ctx.translate(plane.headX * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2, plane.headY * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2);
         this.ctx.rotate(90 * Math.PI / 180);
         this.drawPlane(-1, 1, plane);
@@ -108,6 +132,10 @@ export default class Board {
     if (plane.dead) {
       this.ctx.strokeStyle = UI_BOARD.PLANE_DEAD_BORDER_COLOR;
       this.ctx.fillStyle = UI_BOARD.PLANE_DEAD_COLOR;
+      this.ctx.shadowBlur = 10;
+      this.ctx.shadowOffsetX = 3;
+      this.ctx.shadowOffsetY = 3;
+      this.ctx.shadowColor = "rgba(0, 0, 0, .5)";
     } else {
       this.ctx.strokeStyle = plane.color;
       this.ctx.fillStyle = UI_BOARD.PLANE_COLOR;
@@ -136,7 +164,56 @@ export default class Board {
     this.ctx.lineTo(headX - halfCellWithPadding, headY - halfCellWithPadding);    // 1
     
     this.ctx.closePath();
-    this.ctx.stroke();
     this.ctx.fill();
+    this.ctx.stroke();
+  }
+
+  drawBullets() {
+    for (let bullet of this.bullets) {
+      this.drawBullet(bullet);
+    }
+  }
+
+  drawBullet(bullet) {
+    if (bullet.type === POSITION_TYPE.BOARD) {
+      this.ctx.fillStyle = UI_BOARD.BULLET_BOARD_COLOR;
+      this.ctx.strokeStyle = UI_BOARD.BULLET_BOARD_STROKE_COLOR;
+    } else if (bullet.type === POSITION_TYPE.BODY) {
+      this.ctx.fillStyle = UI_BOARD.BULLET_BODY_COLOR;
+      this.ctx.strokeStyle = UI_BOARD.BULLET_BODY_STROKE_COLOR;
+    } else if (bullet.type === POSITION_TYPE.HEAD) {
+      this.ctx.fillStyle = UI_BOARD.BULLET_HEAD_COLOR;
+      this.ctx.strokeStyle = UI_BOARD.BULLET_HEAD_STROKE_COLOR;
+    }
+    this.ctx.lineWidth = UI_BOARD.BULLET_STROKE_WIDTH;
+
+    const x1 = 0, y1 = -8;
+    const x2 = 8, y2 = -17;
+    const x3 = 17, y3 = -8;
+    const x4 = -y1, y4 = x1;
+
+
+    this.ctx.save();
+    this.ctx.translate(bullet.x * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2, bullet.y * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2);
+    this.ctx.beginPath();
+    this.ctx.moveTo(x1, y1);
+    this.ctx.lineTo(x2, y2);
+    this.ctx.lineTo(x3, y3);
+    this.ctx.lineTo(x4, y4);
+  
+    this.ctx.lineTo(x3, -y3);
+    this.ctx.lineTo(x2, -y2);
+    this.ctx.lineTo(x1, -y1);
+
+    this.ctx.lineTo(-x2, -y2);
+    this.ctx.lineTo(-x3, -y3);
+    this.ctx.lineTo(-x4, -y4);
+
+    this.ctx.lineTo(-x3, y3);
+    this.ctx.lineTo(-x2, y2);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.restore();
   }
 }

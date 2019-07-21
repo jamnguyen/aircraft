@@ -80,6 +80,7 @@ export default class GameManager {
     this.boardPlayer = new Board(canvas);
     this.boardPlayer.drawBoard();
     this.boardPlayer.drawPlanes();
+    this.boardPlayer.drawBullets();
 
     console.log('gameConfig', this.gameConfig);
   }

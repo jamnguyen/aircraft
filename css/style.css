@@ -158,7 +158,6 @@ body {
     <div class="board-info-lives">Lives: 3</div> */
 
 .board {
-  border: 1px solid blue;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -185,7 +184,6 @@ body {
 }
 
 .board-canvas {
-  border: 1px solid green;
 }
 
 

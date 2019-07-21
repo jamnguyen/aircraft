@@ -29,12 +29,21 @@ export const UI_BOARD = {
   STROKE_WIDTH: 1,
   STROKE_COLOR: '#000',
   INDICATOR_FONT: '20px Trebuchet MS',
+
   PLANE_COLOR: 'white',
   PLANE_BORDER_COLOR: 'white',
   PLANE_DEAD_COLOR: 'rgb(100, 100, 100, 1)',
   PLANE_DEAD_BORDER_COLOR: 'rgb(100, 100, 100, 1)',
-  PLANE_STROKE_WIDTH: 5,
+  PLANE_STROKE_WIDTH: 4,
   PLANE_PADDING: 8,
+
+  BULLET_STROKE_WIDTH: 2,
+  BULLET_BOARD_COLOR: 'gray',
+  BULLET_BOARD_STROKE_COLOR: 'black',
+  BULLET_BODY_COLOR: 'white',
+  BULLET_BODY_STROKE_COLOR: 'black',
+  BULLET_HEAD_COLOR: 'red',
+  BULLET_HEAD_STROKE_COLOR: 'white'
 }
 
 export const DIRECTION = {
@@ -42,4 +51,10 @@ export const DIRECTION = {
   DOWN: 'DOWN',
   LEFT: 'LEFT',
   RIGHT: 'RIGHT'
+}
+
+export const POSITION_TYPE = {
+  BOARD: 'BOARD',
+  BODY: 'BODY',
+  HEAD: 'HEAD'
 }
