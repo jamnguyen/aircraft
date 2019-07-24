@@ -19,6 +19,9 @@ const MESSAGE = {
   US_UPDATE_USER_LIST: 'US_UPDATE_USER_LIST',
   US_GET_USER_LIST: 'US_GET_USER_LIST',
 
+  // STATE IN GAME SETUP
+  GS_DONE_SETUP: 'GS_DONE_SETUP',
+
   // STATE IN GAME
   IG_ATTACK: 'IG_ATTACK',
   IG_UNDER_ATTACK: 'IG_UNDER_ATTACK',
@@ -128,6 +131,18 @@ io.on('connection', (socket) => {
 
     io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
+
+  // User done setup
+  socket.on(MESSAGE.GS_DONE_SETUP, () => {
+    const user = users.find(item => item.id === socket.id);
+    if (!user || user.status === STATUS.AVAILABLE) {
+      return;
+    }
+    const opponent = users.find(item => item.id === user.status);
+    if (opponent) {
+      io.to(`${opponent.id}`).emit(MESSAGE.GS_DONE_SETUP);
+    }
+  })
 
   // User disconnect
   socket.on('disconnect', () => {

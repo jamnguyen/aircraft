@@ -133,6 +133,26 @@ export default class MySocket {
   // ----------------------------------------------------------------------------------
   setupStateInGameSetup() {
     this.handleOpponentDisconnected();
+    this.handleOpponentDoneSetup();
+  }
+
+  doneSetup() {
+    this.game.setPlayer('user', { doneSetup: true });
+    this.socket.emit(MESSAGE.GS_DONE_SETUP);
+    if (this.game.gameConfig.player.opponent.doneSetup) {
+      this.game.setState(STATE.IN_GAME);
+    } else {
+      Utilities.showMessagePopup(TEXT.SETUP_WAIT_FOR_OPPONENT);
+    }
+  }
+
+  handleOpponentDoneSetup() {
+    this.socket.on(MESSAGE.GS_DONE_SETUP, () => {
+      this.game.setPlayer('opponent', { doneSetup: true });
+      if (this.game.gameConfig.player.user.doneSetup) {
+        this.game.setState(STATE.IN_GAME);
+      }
+    });
   }
 
   handleOpponentDisconnected() {

@@ -77,6 +77,13 @@ export default class GameManager {
     this.stateHandler.next(state);
   }
 
+  setPlayer(player, value) {
+    this.gameConfig.player[player] = {
+      ...this.gameConfig.player[player],
+      ...value
+    };
+  }
+
   // --------------------------------------------------------------------
   // STATE LOGIN
   // --------------------------------------------------------------------
@@ -113,8 +120,14 @@ export default class GameManager {
 
   handleStateInGameSetup() {
     this.gameConfig.player = {
-      user: this.socket.currentUser,
-      opponent: this.socket.opponentUser
+      user: {
+        ...this.socket.currentUser,
+        doneSetup: false
+      },
+      opponent: {
+        ...this.socket.opponentUser,
+        doneSetup: false
+      }
     }
     console.log('gameConfig', this.gameConfig);
     
@@ -209,7 +222,7 @@ export default class GameManager {
           this.boardPlayer.planes.push({ ...this.gameConfig.defaultPlane });
           direction = this.gameConfig.defaultPlane.direction;
         } else {
-          // WAIT FOR OPPONENT THEN GO TO GAME
+          this.socket.doneSetup();
         }
       } else if (e.keyCode === KEY_EVENT.ESCAPE) {
         if (this.currentPlane > 0) {

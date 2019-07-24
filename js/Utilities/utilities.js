@@ -51,6 +51,26 @@ export default class Utilities {
   // --------------------------------------------------------------------
   // UI SUPPORT
   // --------------------------------------------------------------------
+  static showMessagePopup(message) {
+    let body = document.getElementsByTagName('body')[0];
+
+    let popupBackground = document.createElement('div');
+    popupBackground.classList.add('popup-background');
+
+    let messagePopup = document.createElement('div');
+    messagePopup.classList.add('popup', 'popup-message');
+
+    let messageDiv = document.createElement('div');
+    messageDiv.classList.add('message');
+    messageDiv.innerHTML = message;
+
+    messagePopup.appendChild(messageDiv);
+    popupBackground.appendChild(messagePopup);
+    body.appendChild(popupBackground);
+
+    this.activePopup = popupBackground;
+  }
+
   static showCancelPopup(message, btnCallback) {
     let body = document.getElementsByTagName('body')[0];
 
@@ -61,7 +81,7 @@ export default class Utilities {
     messagePopup.classList.add('popup', 'popup-message');
 
     let messageP = document.createElement('p');
-    messageP.classList.add('message');
+    messageP.classList.add('message', 'm-b-xl');
     messageP.innerHTML = message;
     
     let btn = document.createElement('button');
@@ -94,7 +114,7 @@ export default class Utilities {
     messagePopup.classList.add('popup', 'popup-message');
 
     let messageP = document.createElement('p');
-    messageP.classList.add('message');
+    messageP.classList.add('message', 'm-b-xl');
     messageP.innerHTML = message;
     
     let btn = document.createElement('button');
@@ -127,7 +147,7 @@ export default class Utilities {
     messagePopup.classList.add('popup', 'popup-message');
     
     let messageP = document.createElement('p');
-    messageP.classList.add('message');
+    messageP.classList.add('message', 'm-b-xl');
     messageP.innerHTML = message;
     
     let btnGroup = document.createElement('div');

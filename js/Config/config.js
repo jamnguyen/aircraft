@@ -9,6 +9,9 @@ export const MESSAGE = {
   US_UPDATE_USER_LIST: 'US_UPDATE_USER_LIST',
   US_GET_USER_LIST: 'US_GET_USER_LIST',
 
+  // STATE IN GAME SETUP
+  GS_DONE_SETUP: 'GS_DONE_SETUP',
+
   // STATE IN GAME
   IG_ATTACK: 'IG_ATTACK',
   IG_UNDER_ATTACK: 'IG_UNDER_ATTACK',
@@ -58,6 +61,7 @@ export const TEXT = {
   SETUP_DIRECTION: `Move: <span class="highlight-red">Arrow keys</span> | Rotate: <span class="highlight-red">Spacebar</span> | Next: <span class="highlight-red">Enter</span> | Back: <span class="highlight-red">Esc</span>`,
   SETUP_OUTSIDE_BOARD: `Place the plane inside the board!`,
   SETUP_OVERLAP: `Don't overlap the planes!`,
+  SETUP_WAIT_FOR_OPPONENT: `Waiting for your opponent...`
 }
 
 export const DIRECTION = {
