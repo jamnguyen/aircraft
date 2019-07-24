@@ -9,12 +9,15 @@ app.get('/', (req, res) => {
 // IO functions
 var users = [];   // { id, username }
 const MESSAGE = {
+  DISCONNECTED: 'DISCONNECTED',
+
   // STATE USER SELECT
   US_LOGIN: 'LOGIN',
   US_CHALLENGE: 'US_CHALLENGE',
   US_CHALLENGE_CANCEL: 'US_CHALLENGE_CANCEL',
   US_CHALLENGE_RESPONSE: 'US_CHALLENGE_RESPONSE',
   US_UPDATE_USER_LIST: 'US_UPDATE_USER_LIST',
+  US_GET_USER_LIST: 'US_GET_USER_LIST',
 
   // STATE IN GAME
   IG_ATTACK: 'IG_ATTACK',
@@ -51,24 +54,9 @@ io.on('connection', (socket) => {
     users.filter(user => user.status === STATUS.AVAILABLE)
   );
 
-  // User disconnect
-  socket.on('disconnect', () => {
-    let removeIndex = -1;
-    const disconnectedUser = users.find((user, index) => {
-      if (user.id === socket.id) {
-        removeIndex = index;
-        return true;
-      }
-      return false;
-    });
-
-    if (disconnectedUser.status !== STATUS.AVAILABLE) {
-      // @TO DO: Handle in game disconnected
-    }
-
-    // Send to other users available users list
-    users.splice(removeIndex, 1);
-    io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
+  // Send available users when requested
+  socket.on(MESSAGE.US_GET_USER_LIST, () => {
+    io.to(`${socket.id}`).emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
 
   // User request a game with user has opponentId
@@ -76,8 +64,12 @@ io.on('connection', (socket) => {
     const challenger = users.find(user => user.id === socket.id);
     const opponent = users.find(user => user.id === opponentId);
 
-    challenger.status = STATUS.CHALLENGING;
-    opponent.status = STATUS.CHALLENGING;
+    if (challenger) {
+      challenger.status = opponentId;
+    }
+    if (opponent) {
+      opponent.status = challenger.id;
+    }
 
     io.to(`${opponentId}`).emit(
       MESSAGE.US_CHALLENGE,
@@ -92,8 +84,12 @@ io.on('connection', (socket) => {
     const challenger = users.find(user => user.id === socket.id);
     const opponent = users.find(user => user.id === opponentId);
 
-    challenger.status = STATUS.AVAILABLE;
-    opponent.status = STATUS.AVAILABLE;
+    if (challenger) {
+      challenger.status = STATUS.AVAILABLE;
+    }
+    if (opponent) {
+      opponent.status = STATUS.AVAILABLE;
+    }
 
     io.to(`${opponentId}`).emit(
       MESSAGE.US_CHALLENGE_CANCEL,
@@ -109,11 +105,19 @@ io.on('connection', (socket) => {
     const opponent = users.find(user => user.id === socket.id);
   
     if (!answer) {
-      challenger.status = STATUS.AVAILABLE;
-      opponent.status = STATUS.AVAILABLE;
+      if (challenger) {
+        challenger.status = STATUS.AVAILABLE;
+      }
+      if (opponent) {
+        opponent.status = STATUS.AVAILABLE;
+      }
     } else {
-      challenger.status = opponent.id;
-      opponent.status = challenger.id;
+      if (challenger) {
+        challenger.status = opponent.id;
+      }
+      if (opponent) {
+        opponent.status = challenger.id;
+      }
     }
 
     io.to(`${challenger.id}`).emit(
@@ -122,6 +126,33 @@ io.on('connection', (socket) => {
       opponent
     );
 
+    io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
+  });
+
+  // User disconnect
+  socket.on('disconnect', () => {
+    let removeIndex = -1;
+    const disconnectedUser = users.find((user, index) => {
+      if (user.id === socket.id) {
+        removeIndex = index;
+        return true;
+      }
+      return false;
+    });
+
+    if (disconnectedUser.status !== STATUS.AVAILABLE) {
+      const opponent = users.find(user => user.id === disconnectedUser.status);
+      if (opponent) {
+        opponent.status = STATUS.AVAILABLE;
+      }
+      io.to(disconnectedUser.status).emit(
+        MESSAGE.DISCONNECTED,
+        disconnectedUser
+      );
+    }
+
+    // Send to other users available users list
+    users.splice(removeIndex, 1);
     io.emit(MESSAGE.US_UPDATE_USER_LIST, users.filter(user => user.status === STATUS.AVAILABLE));
   });
 });

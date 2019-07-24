@@ -1,4 +1,4 @@
-import { MESSAGE, SERVER, STATE, UI_BOARD, DIRECTION, CONFIG, KEY_EVENT } from './Config/config.js';
+import { MESSAGE, SERVER, STATE, UI_BOARD, DIRECTION, CONFIG, KEY_EVENT, TEXT } from './Config/config.js';
 import MySocket from './socket.js';
 import Utilities from './Utilities/utilities.js';
 import Board from './board.js';
@@ -65,12 +65,12 @@ export default class GameManager {
         this.handleStateLogin();
       } else if (state === STATE.USER_SELECT) {
         this.handleStateUserSelect();
-      } else if (state === STATE.IN_GAME_SETUP) {
+      } else if (state === STATE.GAME_SETUP) {
         this.handleStateInGameSetup();
       }
     });
 
-    this.stateHandler.next(STATE.IN_GAME_SETUP);
+    this.stateHandler.next(STATE.LOGIN);
   }
 
   setState(state) {
@@ -112,15 +112,23 @@ export default class GameManager {
   // --------------------------------------------------------------------
 
   handleStateInGameSetup() {
-    // this.gameConfig.player = {
-    //   user: this.socket.currentUser,
-    //   opponent: this.socket.opponentUser
-    // }
+    this.gameConfig.player = {
+      user: this.socket.currentUser,
+      opponent: this.socket.opponentUser
+    }
+    console.log('gameConfig', this.gameConfig);
+    
+    this.handleUIInGameSetup();
+    this.handleKeyEventInGameSetup();
+    this.socket.setupStateInGameSetup();
+  }
+
+  handleUIInGameSetup() {
     document.getElementById('in-game').classList.remove('hidden');
     document.getElementById('board-opponent').classList.add('hidden');
     this.boardPlayerDiv = document.getElementById('board-player');
-    this.boardPlayerDiv.getElementsByClassName('board-info-name')[0].innerHTML = this.gameConfig.player.user.username;
-    this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = 'Use arrow to move, space to rotate, enter to go next';
+    this.boardPlayerDiv.getElementsByClassName('board-info-name')[0].innerHTML = TEXT.SETUP_TITLE;
+    this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_DIRECTION;
 
     let canvas = document.getElementById('canvas-player');
     canvas.height = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
@@ -155,17 +163,13 @@ export default class GameManager {
       this.boardPlayer.draw();
       window.requestAnimationFrame(frameDraw);
     }
-
-    this.handleKeyEventInGameSetup();
     window.requestAnimationFrame(frameDraw);
-
-    console.log('gameConfig', this.gameConfig);
   }
 
   handleKeyEventInGameSetup() {
     window.addEventListener('keyup', (e) => {
       this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].classList.remove('highlight-red');
-      this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = 'Use arrow to move, space to rotate, enter to go next';
+      this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_DIRECTION;
       let dx = 0, dy = 0;
       let { direction } = this.boardPlayer.planes[this.currentPlane];
       if (e.keyCode === KEY_EVENT.UP) {
@@ -186,14 +190,14 @@ export default class GameManager {
           direction
         )) {
           this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].classList.add('highlight-red');
-          this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = 'Hey! Place the plane inside the board!';
+          this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_OUTSIDE_BOARD;
           return;
         }
 
         // Check overlapping
         if (this.boardPlayer.hasOverlapped()) {
           this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].classList.add('highlight-red');
-          this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = `Don't overlap the planes!`;
+          this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_OVERLAP;
           return;
         }
 

@@ -144,18 +144,13 @@ body {
 /* --------------------------------------------------------------------- */
 /* IN GAME CLASSES */
 /* --------------------------------------------------------------------- */
-#in-game {
+.in-game {
   display: flex;
   justify-content: center;
   height: 100%;
   width: 100%;
   padding: 50px 0;
 }
-
-/* <div id="board-player" class="board">
-  <div class="board-info">
-    <div class="board-info-name">Player 1</div>
-    <div class="board-info-lives">Lives: 3</div> */
 
 .board {
   display: flex;

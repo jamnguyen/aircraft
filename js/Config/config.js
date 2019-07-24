@@ -1,10 +1,13 @@
 export const MESSAGE = {
+  DISCONNECTED: 'DISCONNECTED',
+
   // STATE USER SELECT
   US_LOGIN: 'LOGIN',
   US_CHALLENGE: 'US_CHALLENGE',
   US_CHALLENGE_CANCEL: 'US_CHALLENGE_CANCEL',
   US_CHALLENGE_RESPONSE: 'US_CHALLENGE_RESPONSE',
   US_UPDATE_USER_LIST: 'US_UPDATE_USER_LIST',
+  US_GET_USER_LIST: 'US_GET_USER_LIST',
 
   // STATE IN GAME
   IG_ATTACK: 'IG_ATTACK',
@@ -19,7 +22,7 @@ export const STATE = {
   LOGIN: 'LOGIN',
   USER_SELECT: 'USER_SELECT',
   IN_GAME: 'IN_GAME',
-  IN_GAME_SETUP: 'IN_GAME_SETUP',
+  GAME_SETUP: 'GAME_SETUP',
 }
 
 // UI CONFIG
@@ -47,6 +50,14 @@ export const UI_BOARD = {
   BULLET_BODY_STROKE_COLOR: 'black',
   BULLET_HEAD_COLOR: 'red',
   BULLET_HEAD_STROKE_COLOR: 'white'
+}
+
+export const TEXT = {
+  WAIT_FOR_ACCEPTANCE: `Waiting for opponent's response...`,
+  SETUP_TITLE: `Setup your planes`,
+  SETUP_DIRECTION: `Move: <span class="highlight-red">Arrow keys</span> | Rotate: <span class="highlight-red">Spacebar</span> | Next: <span class="highlight-red">Enter</span> | Back: <span class="highlight-red">Esc</span>`,
+  SETUP_OUTSIDE_BOARD: `Place the plane inside the board!`,
+  SETUP_OVERLAP: `Don't overlap the planes!`,
 }
 
 export const DIRECTION = {

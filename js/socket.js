@@ -1,4 +1,4 @@
-import { MESSAGE, SERVER, STATE } from './Config/config.js';
+import { MESSAGE, SERVER, STATE, TEXT } from './Config/config.js';
 import Utilities from './Utilities/utilities.js';
 
 export default class MySocket {
@@ -20,6 +20,8 @@ export default class MySocket {
       this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_CANCEL);
       this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_RESPONSE);
       this.socket.removeAllListeners(MESSAGE.US_UPDATE_USER_LIST);
+    } else if (state === STATE.GAME_SETUP) {
+      this.socket.removeAllListeners(MESSAGE.DISCONNECTED);
     }
   }
 
@@ -32,14 +34,14 @@ export default class MySocket {
     this.handleChallengeRequest();
     this.handleChallengeCancel();
     this.handleChallengeReponse();
+    this.handleChallengingDisconnected();
+    this.requestUserList();
   }
 
   handleLogin() {
-    let availableUserDiv = document.getElementById('available-users');
     this.socket.on(MESSAGE.US_LOGIN, (res) => {
       this.currentUser = res.currentUser;
       this.users = res.users;
-      availableUserDiv.classList.remove('hidden');
       Utilities.renderAvailableUsers(
         this.users.filter(user => user.id !== this.currentUser.id),
         (user) => {
@@ -50,26 +52,20 @@ export default class MySocket {
   }
 
   challenge(opponentId) {
-    let messageBox = document.getElementById('challenging-message');
-    messageBox.classList.remove('hidden');
+    Utilities.showCancelPopup(TEXT.WAIT_FOR_ACCEPTANCE, () => {
+      this.cancelRequest(opponentId);
+    });
 
     this.socket.emit(MESSAGE.US_CHALLENGE, opponentId);
-    let cancelButton = messageBox.getElementsByTagName('button')[0];
-    cancelButton.addEventListener('click', () => this.cancelRequest(opponentId));
   }
 
   cancelRequest(opponentId) {
-    let messageBox = document.getElementById('challenging-message');
-    messageBox.classList.add('hidden');
-
     this.socket.emit(MESSAGE.US_CHALLENGE_CANCEL, opponentId);
   }
 
   handleUpdateUserList() {
-    let availableUserDiv = document.getElementById('available-users');
     this.socket.on(MESSAGE.US_UPDATE_USER_LIST, (availUsers) => {
       this.users = availUsers;
-      availableUserDiv.classList.remove('hidden');
       Utilities.renderAvailableUsers(
         this.users.filter(user => user.id !== this.currentUser.id),
         (user) => {
@@ -79,67 +75,73 @@ export default class MySocket {
     });
   }
 
+  requestUserList() {
+    this.socket.emit(MESSAGE.US_GET_USER_LIST);
+  }
+
   handleChallengeRequest() {
     this.socket.on(MESSAGE.US_CHALLENGE, (challenger) => {
-      let messageBox = document.getElementById('challenging-question');
-      messageBox.classList.remove('hidden');
-      let message = messageBox.getElementsByClassName('message')[0];
-      message.innerHTML = `${challenger.username} is challenging you to a game`;
-      
-      let acceptButton = document.getElementById('accept-btn');
-      let rejectButton = document.getElementById('reject-btn');
-
-      acceptButton.addEventListener('click', () => {
-        this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, true);
-        messageBox.classList.add('hidden');
-        // GAME ON
-        this.opponentUser = challenger;
-        document.getElementById('available-users').classList.add('hidden');
-        this.stopListeningOnState(STATE.USER_SELECT);
-        this.game.setState(STATE.IN_GAME_SETUP);
-      });
-      rejectButton.addEventListener('click', () => {
-        this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, false);
-        messageBox.classList.add('hidden');
-      });
+      Utilities.showQuestionPopup(
+        `${challenger.username} is challenging you to a game`,
+        'Accept', 'Reject',
+        () => {
+          this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, true);
+          this.opponentUser = challenger;
+          this.stopListeningOnState(STATE.USER_SELECT);
+          Utilities.hideAvailableUsers();
+          this.game.setState(STATE.GAME_SETUP);
+        },
+        () => {
+          this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, false);
+        }
+      );
     });
   }
 
   handleChallengeReponse() {
     this.socket.on(MESSAGE.US_CHALLENGE_RESPONSE, (answer, opponent) => {
-      let messageBox = document.getElementById('challenging-message');
-      messageBox.classList.add('hidden');
+      Utilities.removeActivePopup();
       
       if (answer) {
         // GAME ON
         this.opponentUser = opponent;
-        document.getElementById('available-users').classList.add('hidden');
+        Utilities.hideAvailableUsers();
         this.stopListeningOnState(STATE.USER_SELECT);
-        this.game.setState(STATE.IN_GAME_SETUP);
+        this.game.setState(STATE.GAME_SETUP);
       } else {
-        messageBox = document.getElementById('challenging-reject');
-        messageBox.classList.remove('hidden');
-        let message = messageBox.getElementsByClassName('message')[0];
-        message.innerHTML = `${opponent.username} has rejected your challenge`;
-        let closeButton = messageBox.getElementsByTagName('button')[0];
-        closeButton.addEventListener('click', () => {
-          messageBox.classList.add('hidden');
-        });
+        Utilities.showOkayPopup(`${opponent.username} has rejected your challenge`);
       }
     });
   }
 
   handleChallengeCancel() {
     this.socket.on(MESSAGE.US_CHALLENGE_CANCEL, (challenger) => {
-      let messageBox = document.getElementById('challenging-question');
-      messageBox.classList.add('hidden');
-      messageBox = document.getElementById('challenging-cancel');
-      messageBox.classList.remove('hidden');
-      let message = messageBox.getElementsByClassName('message')[0];
-      message.innerHTML = `${challenger.username} has canceled the challenge`;
-      let closeButton = messageBox.getElementsByTagName('button')[0];
-      closeButton.addEventListener('click', () => {
-        messageBox.classList.add('hidden');
+      Utilities.removeActivePopup();
+      Utilities.showOkayPopup(`${challenger.username} has canceled the challenge`);
+    });
+  }
+
+  handleChallengingDisconnected() {
+    this.socket.on(MESSAGE.DISCONNECTED, (challenger) => {
+      Utilities.removeActivePopup();
+      Utilities.showOkayPopup(`${challenger.username} is offline!`);
+    });
+  }
+
+  // ----------------------------------------------------------------------------------
+  // STATE IN GAME SETUP
+  // ----------------------------------------------------------------------------------
+  setupStateInGameSetup() {
+    this.handleOpponentDisconnected();
+  }
+
+  handleOpponentDisconnected() {
+    this.socket.on(MESSAGE.DISCONNECTED, (opponent) => {
+      this.stopListeningOnState(STATE.GAME_SETUP);
+      Utilities.removeActivePopup();
+      Utilities.showOkayPopup(`${opponent.username} is offline!`, () => {
+        document.getElementById('in-game').classList.add('hidden');
+        this.game.setState(STATE.USER_SELECT);
       });
     });
   }
