@@ -129,10 +129,10 @@ export default class MySocket {
   }
 
   // ----------------------------------------------------------------------------------
-  // STATE IN GAME SETUP
+  // STATE GAME SETUP
   // ----------------------------------------------------------------------------------
-  setupStateInGameSetup() {
-    this.handleOpponentDisconnected();
+  setupStateGameSetup() {
+    this.handleOpponentDisconnectedSetup();
     this.handleOpponentDoneSetup();
   }
 
@@ -140,8 +140,10 @@ export default class MySocket {
     this.game.setPlayer('user', { doneSetup: true });
     this.socket.emit(MESSAGE.GS_DONE_SETUP);
     if (this.game.gameConfig.player.opponent.doneSetup) {
+      this.game.setTurn('opponent');
       this.game.setState(STATE.IN_GAME);
     } else {
+      this.game.setTurn('user');
       Utilities.showMessagePopup(TEXT.SETUP_WAIT_FOR_OPPONENT);
     }
   }
@@ -155,7 +157,7 @@ export default class MySocket {
     });
   }
 
-  handleOpponentDisconnected() {
+  handleOpponentDisconnectedSetup() {
     this.socket.on(MESSAGE.DISCONNECTED, (opponent) => {
       this.stopListeningOnState(STATE.GAME_SETUP);
       Utilities.removeActivePopup();

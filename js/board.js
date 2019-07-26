@@ -3,6 +3,8 @@ import { UI_BOARD, DIRECTION, POSITION_TYPE, PLANE_MATRIX } from './Config/confi
 export default class Board {
   canvas;
   ctx;
+  active;
+  showAimingMark;
   planes = [
     // {
     //   headX: 3,
@@ -52,13 +54,25 @@ export default class Board {
     //   y: 1,
     //   type: POSITION_TYPE.HEAD
     // }
-  ]
+  ];
+  indicator = {
+    x: 1,
+    y: 1,
+    color: UI_BOARD.AIMING_MARK_COLOR,
+    offset: 0
+  }
 
   constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
+    this.setCanvas(canvas);
     this.planes = [];
     this.bullets = [];
+    this.active = true;
+    this.showAimingMark = false;
+  }
+
+  setCanvas(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
   }
 
   clean() {
@@ -73,6 +87,13 @@ export default class Board {
       ...this.planes[index],
       ...info
     }
+  }
+
+  setIndicator(value) {
+    this.indicator = {
+      ...this.indicator,
+      ...value
+    };
   }
 
   isOutside(headX, headY, direction) {
@@ -109,7 +130,10 @@ export default class Board {
       x: PLANE_MATRIX[direction][index].x + headX,
       y: PLANE_MATRIX[direction][index].y + headY
     };
+  }
 
+  hasBullet(x, y) {
+    return this.bullets.findIndex(bullet => bullet.x === x && bullet.y === y) > -1;
   }
 
   draw() {
@@ -117,10 +141,14 @@ export default class Board {
     this.drawBoard();
     this.drawPlanes();
     this.drawBullets();
+    if (this.showAimingMark) {
+      this.drawAimingIndicator();
+    }
   }
 
   drawBoard() {
     this.ctx.strokeStyle = UI_BOARD.STROKE_COLOR;
+    this.ctx.fillStyle = UI_BOARD.STROKE_COLOR;
     this.ctx.lineWidth = UI_BOARD.STROKE_WIDTH;
 
     for (let i = 1; i < UI_BOARD.BOARD_SIZE; i++) {
@@ -270,6 +298,66 @@ export default class Board {
     this.ctx.closePath();
     this.ctx.fill();
     this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  drawAimingIndicator() {
+    this.ctx.fillStyle = this.indicator.color;
+    const cell = UI_BOARD.CELL_SIZE;
+    const halfWidth = Math.floor(UI_BOARD.AIMING_MARK_WIDTH / 2);
+    const cellOneThird = Math.floor(UI_BOARD.CELL_SIZE / 3);
+
+    this.ctx.save();
+    this.ctx.translate(this.indicator.x * UI_BOARD.CELL_SIZE - 1, this.indicator.y * UI_BOARD.CELL_SIZE - 1);
+
+    this.ctx.translate(-this.indicator.offset, -this.indicator.offset);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(-halfWidth, -halfWidth);
+    this.ctx.lineTo(cellOneThird, -halfWidth);
+    this.ctx.lineTo(cellOneThird, halfWidth);
+    this.ctx.lineTo(halfWidth, halfWidth);
+    this.ctx.lineTo(halfWidth, cellOneThird);
+    this.ctx.lineTo(-halfWidth, cellOneThird);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.translate(2 * this.indicator.offset, 0);
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(cell + halfWidth, -halfWidth);
+    this.ctx.lineTo(cell - cellOneThird, -halfWidth);
+    this.ctx.lineTo(cell - cellOneThird, halfWidth);
+    this.ctx.lineTo(cell - halfWidth, halfWidth);
+    this.ctx.lineTo(cell - halfWidth, cellOneThird);
+    this.ctx.lineTo(cell + halfWidth, cellOneThird);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.translate(0, 2 * this.indicator.offset);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(cell + halfWidth, cell + halfWidth);
+    this.ctx.lineTo(cell - cellOneThird, cell + halfWidth);
+    this.ctx.lineTo(cell - cellOneThird, cell - halfWidth);
+    this.ctx.lineTo(cell - halfWidth, cell - halfWidth);
+    this.ctx.lineTo(cell - halfWidth, cell - cellOneThird);
+    this.ctx.lineTo(cell + halfWidth, cell - cellOneThird);
+    this.ctx.closePath();
+    this.ctx.fill();
+
+    this.ctx.translate(-2 * this.indicator.offset, 0);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(-halfWidth, cell + halfWidth);
+    this.ctx.lineTo(cellOneThird, cell + halfWidth);
+    this.ctx.lineTo(cellOneThird, cell - halfWidth);
+    this.ctx.lineTo(halfWidth, cell - halfWidth);
+    this.ctx.lineTo(halfWidth, cell - cellOneThird);
+    this.ctx.lineTo(-halfWidth, cell - cellOneThird);
+    this.ctx.closePath();
+    this.ctx.fill();
+
     this.ctx.restore();
   }
 }

@@ -14,6 +14,9 @@ export default class GameManager {
   boardPlayerDiv;
   boardOpponent;
   boardOpponentDiv;
+  turn;
+  drawFrameId;
+  keyEventCallback;
 
   constructor() {
     this.gameConfig = {
@@ -66,7 +69,9 @@ export default class GameManager {
       } else if (state === STATE.USER_SELECT) {
         this.handleStateUserSelect();
       } else if (state === STATE.GAME_SETUP) {
-        this.handleStateInGameSetup();
+        this.handleStateGameSetup();
+      } else if (state === STATE.IN_GAME) {
+        this.handleStateInGame();
       }
     });
 
@@ -82,6 +87,10 @@ export default class GameManager {
       ...this.gameConfig.player[player],
       ...value
     };
+  }
+
+  setTurn(player) {
+    this.turn = player;
   }
 
   // --------------------------------------------------------------------
@@ -115,10 +124,10 @@ export default class GameManager {
   }
 
   // --------------------------------------------------------------------
-  // STATE IN GAME SETUP
+  // STATE GAME SETUP
   // --------------------------------------------------------------------
 
-  handleStateInGameSetup() {
+  handleStateGameSetup() {
     this.gameConfig.player = {
       user: {
         ...this.socket.currentUser,
@@ -131,12 +140,12 @@ export default class GameManager {
     }
     console.log('gameConfig', this.gameConfig);
     
-    this.handleUIInGameSetup();
-    this.handleKeyEventInGameSetup();
-    this.socket.setupStateInGameSetup();
+    this.handleUIGameSetup();
+    this.handleKeyEventGameSetup();
+    this.socket.setupStateGameSetup();
   }
 
-  handleUIInGameSetup() {
+  handleUIGameSetup() {
     document.getElementById('in-game').classList.remove('hidden');
     document.getElementById('board-opponent').classList.add('hidden');
     this.boardPlayerDiv = document.getElementById('board-player');
@@ -174,13 +183,17 @@ export default class GameManager {
       }
 
       this.boardPlayer.draw();
-      window.requestAnimationFrame(frameDraw);
+      this.drawFrameId = window.requestAnimationFrame(frameDraw);
     }
-    window.requestAnimationFrame(frameDraw);
+    this.drawFrameId = window.requestAnimationFrame(frameDraw);
   }
 
-  handleKeyEventInGameSetup() {
-    window.addEventListener('keyup', (e) => {
+  handleKeyEventGameSetup() {
+    if (this.keyEventCallback) {
+      window.removeEventListener('keyup', this.keyEventCallback);
+    }
+
+    this.keyEventCallback = (e) => {
       this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].classList.remove('highlight-red');
       this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_DIRECTION;
       let dx = 0, dy = 0;
@@ -240,6 +253,127 @@ export default class GameManager {
           direction
         }
       );
-    });
+    };
+
+    window.addEventListener('keyup', this.keyEventCallback);
+  }
+
+  // --------------------------------------------------------------------
+  // STATE IN GAME
+  // --------------------------------------------------------------------
+
+  handleStateInGame() {    
+    this.handleUIInGame();
+    this.handleKeyEventInGame();
+  }
+
+  handleUIInGame() {
+    Utilities.removeActivePopup();
+
+    this.setPlayer('user', { lives: 3 });
+    this.setPlayer('opponent', { lives: 3 });
+    const { player } = this.gameConfig;
+
+    // Reset player board
+    window.cancelAnimationFrame(this.drawFrameId);
+    const tempBoard = this.boardPlayerDiv.cloneNode(true);
+    this.boardPlayerDiv.remove();
+    this.boardPlayerDiv = tempBoard;
+    this.boardOpponentDiv = document.getElementById('board-opponent');
+    document.getElementById('in-game').insertBefore(this.boardPlayerDiv, this.boardOpponentDiv);
+    this.boardPlayerDiv.getElementsByClassName('board-info-name')[0].innerHTML = player.user.username;
+    this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = `Lives: <span id="user-lives" class="highlight-red">${player.user.lives}</span>`;
+    let canvas = document.getElementById('canvas-player');
+    this.boardPlayer.setCanvas(canvas);
+
+    this.boardOpponentDiv.classList.remove('hidden');
+    this.boardOpponentDiv = document.getElementById('board-opponent');
+    this.boardOpponentDiv.getElementsByClassName('board-info-name')[0].innerHTML = player.opponent.username;
+    this.boardOpponentDiv.getElementsByClassName('board-info-notify')[0].innerHTML = `Lives: <span id="user-lives" class="highlight-red">${player.opponent.lives}</span>`;
+
+    canvas = document.getElementById('canvas-opponent');
+    canvas.height = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
+    canvas.width = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
+    
+    this.boardOpponent = new Board(canvas);
+
+    const delta = UI_BOARD.AIMING_MARK_MAX_OFFSET;
+    let stop = 0;
+    let stopDirection = -1;
+  
+    let lastFrame = Math.floor(performance.now());
+
+    const frameDraw = () => {
+      // Calculate color
+      let now = Math.floor(performance.now());
+      if (now - lastFrame >= CONFIG.TIME_OF_FRAME * 3) {
+        if ((stop >= delta && stopDirection > 0) || (stop <= 0 && stopDirection < 0)) {
+          stopDirection = -stopDirection;
+        }
+        stop += stopDirection;
+        this.boardOpponent.setIndicator({ offset: stop });
+        lastFrame = now;
+      }
+
+      this.boardPlayer.draw();
+      if (this.turn === 'user') {
+        this.boardOpponent.showAimingMark = true;
+      }
+      this.boardOpponent.draw();
+      this.drawFrameId = window.requestAnimationFrame(frameDraw);
+    }
+    this.drawFrameId = window.requestAnimationFrame(frameDraw);
+  }
+
+  handleKeyEventInGame() {
+    if (this.keyEventCallback) {
+      window.removeEventListener('keyup', this.keyEventCallback);
+    }
+
+    this.keyEventCallback = (e) => {
+      if (this.turn === 'opponent') {
+        return;
+      }
+      let dx = 0, dy = 0;
+      if (e.keyCode === KEY_EVENT.UP) {
+        dy = -1;
+      } else if (e.keyCode === KEY_EVENT.DOWN) {
+        dy = 1;
+      } else if (e.keyCode === KEY_EVENT.LEFT) {
+        dx = -1;
+      } else if (e.keyCode === KEY_EVENT.RIGHT) {
+        dx = 1;
+      } else if (e.keyCode === KEY_EVENT.ENTER) {
+        // ATTACK
+        if (this.boardOpponent.hasBullet(this.boardOpponent.indicator.x, this.boardOpponent.indicator.y)) {
+          return;
+        }
+        // Send coordinate to opponent
+        // Add new bullet with type after opponent response
+      }
+
+      if (
+        this.boardOpponent.indicator.x + dx < 1 || this.boardOpponent.indicator.x + dx > UI_BOARD.BOARD_SIZE - 2 ||
+        this.boardOpponent.indicator.y + dy < 1 || this.boardOpponent.indicator.y + dy > UI_BOARD.BOARD_SIZE - 2
+      ) {
+        return;
+      }
+
+      this.boardOpponent.setIndicator({
+        x: this.boardOpponent.indicator.x + dx,
+        y: this.boardOpponent.indicator.y + dy,
+      });
+    };
+
+    window.addEventListener('keyup', this.keyEventCallback);
+  }
+
+  updateLives(player) {
+    document.getElementById(`${player}-lives`).innerHTML = this.gameConfig.player[player].lives;
+  }
+
+  addBullet(player, x, y, type) {
+    const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
+    board.bullets.push({x, y, type});
   }
 }
