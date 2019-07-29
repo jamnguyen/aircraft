@@ -1,4 +1,4 @@
-import { MESSAGE, SERVER, STATE, TEXT } from './Config/config.js';
+import { MESSAGE, UI_BOARD, SERVER, STATE, TEXT } from './Config/config.js';
 import Utilities from './Utilities/utilities.js';
 
 export default class MySocket {
@@ -165,6 +165,42 @@ export default class MySocket {
         document.getElementById('in-game').classList.add('hidden');
         this.game.setState(STATE.USER_SELECT);
       });
+    });
+  }
+
+  // ----------------------------------------------------------------------------------
+  // STATE IN GAME
+  // ----------------------------------------------------------------------------------
+  setupStateInGame() {
+    this.handleUnderAttack();
+    this.handleAttackResponse();
+  }
+
+  attack(bullet) {
+    this.socket.emit(MESSAGE.IG_ATTACK, bullet);
+  }
+
+  handleUnderAttack() {
+    this.socket.on(MESSAGE.IG_ATTACK, (bullet) => {
+      bullet.type = this.game.getBulletType(bullet.x, bullet.y);
+      this.socket.emit(MESSAGE.IG_ATTACK_RESPONSE, bullet);
+      this.game.addBullet('user', bullet);
+      if (this.game.getHeadBulletAmount('user') >= UI_BOARD.PLANE_AMOUNT) {
+        Utilities.showOkayPopup(TEXT.IG_LOSE, () => {
+          this.game.setState(STATE.USER_SELECT);
+        });
+      }
+    });
+  }
+
+  handleAttackResponse() {
+    this.socket.on(MESSAGE.IG_ATTACK_RESPONSE, bullet => {
+      this.game.addBullet('opponent', bullet);
+      if (this.game.getHeadBulletAmount('opponent') >= UI_BOARD.PLANE_AMOUNT) {
+        Utilities.showOkayPopup(TEXT.IG_WIN, () => {
+          this.game.setState(STATE.USER_SELECT);
+        });
+      }
     });
   }
 

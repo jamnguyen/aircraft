@@ -1,4 +1,4 @@
-import { MESSAGE, SERVER, STATE, UI_BOARD, DIRECTION, CONFIG, KEY_EVENT, TEXT } from './Config/config.js';
+import { MESSAGE, SERVER, STATE, UI_BOARD, DIRECTION, CONFIG, KEY_EVENT, TEXT, BULLET_TYPE } from './Config/config.js';
 import MySocket from './socket.js';
 import Utilities from './Utilities/utilities.js';
 import Board from './board.js';
@@ -265,13 +265,14 @@ export default class GameManager {
   handleStateInGame() {    
     this.handleUIInGame();
     this.handleKeyEventInGame();
+    this.socket.setupStateInGame();
   }
 
   handleUIInGame() {
     Utilities.removeActivePopup();
 
-    this.setPlayer('user', { lives: 3 });
-    this.setPlayer('opponent', { lives: 3 });
+    this.setPlayer('user', { lives: UI_BOARD.PLANE_AMOUNT });
+    this.setPlayer('opponent', { lives: UI_BOARD.PLANE_AMOUNT });
     const { player } = this.gameConfig;
 
     // Reset player board
@@ -349,7 +350,7 @@ export default class GameManager {
           return;
         }
         // Send coordinate to opponent
-        // Add new bullet with type after opponent response
+        this.socket.attack({ x: this.boardOpponent.indicator.x, y: this.boardOpponent.indicator.y, type: null});
       }
 
       if (
@@ -372,8 +373,22 @@ export default class GameManager {
     document.getElementById(`${player}-lives`).innerHTML = this.gameConfig.player[player].lives;
   }
 
-  addBullet(player, x, y, type) {
+  getBulletType(x, y) {
+    return this.boardPlayer.getBulletType(x, y);
+  }
+
+  addBullet(player, bullet) {
     const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
-    board.bullets.push({x, y, type});
+    board.bullets.push(bullet);
+  }
+  
+  getDeadPlaneAmount(player) {
+    const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
+    return board.getDeadPlaneAmount();
+  }
+
+  getHeadBulletAmount(player) {
+    const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
+    return board.getHeadBulletAmount();
   }
 }

@@ -14,7 +14,8 @@ export const MESSAGE = {
 
   // STATE IN GAME
   IG_ATTACK: 'IG_ATTACK',
-  IG_UNDER_ATTACK: 'IG_UNDER_ATTACK',
+  IG_ATTACK_RESPONSE: 'IG_ATTACK_RESPONSE',
+  IG_RESIGN: 'IG_RESIGN',
 }
 
 export const SERVER = {
@@ -54,9 +55,15 @@ export const UI_BOARD = {
   BULLET_HEAD_COLOR: 'red',
   BULLET_HEAD_STROKE_COLOR: 'white',
 
-  AIMING_MARK_COLOR: 'rgb(205, 0, 0)',
+  AIMING_MARK_COLOR: 'rgb(230, 0, 0)',
   AIMING_MARK_WIDTH: 10,
   AIMING_MARK_MAX_OFFSET: 3
+}
+
+export const BULLET_TYPE = {
+  BOARD: 1,
+  BODY: 2,
+  HEAD: 3
 }
 
 export const TEXT = {
@@ -65,7 +72,9 @@ export const TEXT = {
   SETUP_DIRECTION: `Move: <span class="highlight-red">Arrow keys</span> | Rotate: <span class="highlight-red">Spacebar</span> | Next: <span class="highlight-red">Enter</span> | Back: <span class="highlight-red">Esc</span>`,
   SETUP_OUTSIDE_BOARD: `Place the plane inside the board!`,
   SETUP_OVERLAP: `Don't overlap the planes!`,
-  SETUP_WAIT_FOR_OPPONENT: `Waiting for your opponent...`
+  SETUP_WAIT_FOR_OPPONENT: `Waiting for your opponent...`,
+  IG_WIN: `You win!`,
+  IG_LOSE: `You lose!`,
 }
 
 export const DIRECTION = {
@@ -73,12 +82,6 @@ export const DIRECTION = {
   RIGHT: 1,
   DOWN: 2,
   LEFT: 3,
-}
-
-export const POSITION_TYPE = {
-  BOARD: 'BOARD',
-  BODY: 'BODY',
-  HEAD: 'HEAD'
 }
 
 export const KEY_EVENT = {

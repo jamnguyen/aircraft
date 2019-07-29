@@ -1,4 +1,4 @@
-import { UI_BOARD, DIRECTION, POSITION_TYPE, PLANE_MATRIX } from './Config/config.js';
+import { UI_BOARD, DIRECTION, PLANE_MATRIX, BULLET_TYPE } from './Config/config.js';
 
 export default class Board {
   canvas;
@@ -32,27 +32,27 @@ export default class Board {
     // {
     //   x: 3,
     //   y: 3,
-    //   type: POSITION_TYPE.BODY
+    //   type: BULLET_TYPE.BODY
     // },
     // {
     //   x: 5,
     //   y: 5,
-    //   type: POSITION_TYPE.BODY
+    //   type: BULLET_TYPE.BODY
     // },
     // {
     //   x: 8,
     //   y: 8,
-    //   type: POSITION_TYPE.BODY
+    //   type: BULLET_TYPE.BODY
     // },
     // {
     //   x: 7,
     //   y: 3,
-    //   type: POSITION_TYPE.BOARD
+    //   type: BULLET_TYPE.BOARD
     // },
     // {
     //   x: 3,
     //   y: 1,
-    //   type: POSITION_TYPE.HEAD
+    //   type: BULLET_TYPE.HEAD
     // }
   ];
   indicator = {
@@ -134,6 +134,32 @@ export default class Board {
 
   hasBullet(x, y) {
     return this.bullets.findIndex(bullet => bullet.x === x && bullet.y === y) > -1;
+  }
+
+  getBulletType(x, y) {
+    for (let plane of this.planes) {
+      if (x === plane.headX && y === plane.headY) {
+        return BULLET_TYPE.HEAD;
+      }
+      let planeMatrix = PLANE_MATRIX[plane.direction];
+      for (let i = 0; i < 10; i++) {
+        if (planeMatrix[i].x === 0 && planeMatrix[i].y === 0) {
+          continue;
+        }
+        if ((planeMatrix[i].x + plane.headX) === x && (planeMatrix[i].y + plane.headY) === y) {
+          return BULLET_TYPE.BODY;
+        }
+      }
+    }
+    return BULLET_TYPE.BOARD;
+  }
+
+  getDeadPlaneAmount() {
+    return this.planes.filter(plane => plane.dead).length;
+  }
+
+  getHeadBulletAmount() {
+    return this.bullets.filter(bullet => bullet.type === BULLET_TYPE.HEAD).length;
   }
 
   draw() {
@@ -259,13 +285,13 @@ export default class Board {
   }
 
   drawBullet(bullet) {
-    if (bullet.type === POSITION_TYPE.BOARD) {
+    if (bullet.type === BULLET_TYPE.BOARD) {
       this.ctx.fillStyle = UI_BOARD.BULLET_BOARD_COLOR;
       this.ctx.strokeStyle = UI_BOARD.BULLET_BOARD_STROKE_COLOR;
-    } else if (bullet.type === POSITION_TYPE.BODY) {
+    } else if (bullet.type === BULLET_TYPE.BODY) {
       this.ctx.fillStyle = UI_BOARD.BULLET_BODY_COLOR;
       this.ctx.strokeStyle = UI_BOARD.BULLET_BODY_STROKE_COLOR;
-    } else if (bullet.type === POSITION_TYPE.HEAD) {
+    } else if (bullet.type === BULLET_TYPE.HEAD) {
       this.ctx.fillStyle = UI_BOARD.BULLET_HEAD_COLOR;
       this.ctx.strokeStyle = UI_BOARD.BULLET_HEAD_STROKE_COLOR;
     }

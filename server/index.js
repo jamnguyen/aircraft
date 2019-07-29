@@ -24,7 +24,8 @@ const MESSAGE = {
 
   // STATE IN GAME
   IG_ATTACK: 'IG_ATTACK',
-  IG_UNDER_ATTACK: 'IG_UNDER_ATTACK',
+  IG_ATTACK_RESPONSE: 'IG_ATTACK_RESPONSE',
+  IG_RESIGN: 'IG_RESIGN',
 }
 const STATUS = {
   AVAILABLE: 'AVAILABLE',
@@ -142,7 +143,37 @@ io.on('connection', (socket) => {
     if (opponent) {
       io.to(`${opponent.id}`).emit(MESSAGE.GS_DONE_SETUP);
     }
-  })
+  });
+
+  //User attack
+  socket.on(MESSAGE.IG_ATTACK, bullet => {
+    const user = users.find(item => item.id === socket.id);
+    if (!user || user.status === STATUS.AVAILABLE) {
+      return;
+    }
+
+    io.to(user.status).emit(MESSAGE.IG_ATTACK, bullet);
+  });
+
+  //User return attack result
+  socket.on(MESSAGE.IG_ATTACK_RESPONSE, bullet => {
+    const user = users.find(item => item.id === socket.id);
+    if (!user || user.status === STATUS.AVAILABLE) {
+      return;
+    }
+
+    io.to(user.status).emit(MESSAGE.IG_ATTACK_RESPONSE, bullet);
+  });
+
+  //User resign
+  socket.on(MESSAGE.IG_RESIGN, () => {
+    const user = users.find(item => item.id === socket.id);
+    if (!user || user.status === STATUS.AVAILABLE) {
+      return;
+    }
+
+    io.to(user.status).emit(MESSAGE.IG_RESIGN);
+  });
 
   // User disconnect
   socket.on('disconnect', () => {
