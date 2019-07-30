@@ -1,4 +1,4 @@
-import { MESSAGE, UI_BOARD, SERVER, STATE, TEXT } from './Config/config.js';
+import { MESSAGE, UI_BOARD, SERVER, STATE, TEXT, BULLET_TYPE } from './Config/config.js';
 import Utilities from './Utilities/utilities.js';
 
 export default class MySocket {
@@ -13,16 +13,17 @@ export default class MySocket {
     this.game = gameManager;
   }
 
-  stopListeningOnState(state) {
-    if (state === STATE.USER_SELECT) {
-      this.socket.removeAllListeners(MESSAGE.US_LOGIN);
-      this.socket.removeAllListeners(MESSAGE.US_CHALLENGE);
-      this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_CANCEL);
-      this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_RESPONSE);
-      this.socket.removeAllListeners(MESSAGE.US_UPDATE_USER_LIST);
-    } else if (state === STATE.GAME_SETUP) {
-      this.socket.removeAllListeners(MESSAGE.DISCONNECTED);
-    }
+  stopAllListener() {
+    this.socket.removeAllListeners(MESSAGE.DISCONNECTED);
+
+    this.socket.removeAllListeners(MESSAGE.US_LOGIN);
+    this.socket.removeAllListeners(MESSAGE.US_UPDATE_USER_LIST);
+    this.socket.removeAllListeners(MESSAGE.US_CHALLENGE);
+    this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_CANCEL);
+    this.socket.removeAllListeners(MESSAGE.US_CHALLENGE_RESPONSE);
+
+    this.socket.removeAllListeners(MESSAGE.IG_ATTACK);
+    this.socket.removeAllListeners(MESSAGE.IG_ATTACK_RESPONSE);
   }
 
   // ----------------------------------------------------------------------------------
@@ -52,6 +53,7 @@ export default class MySocket {
   }
 
   challenge(opponentId) {
+    Utilities.removeActivePopup();
     Utilities.showCancelPopup(TEXT.WAIT_FOR_ACCEPTANCE, () => {
       this.cancelRequest(opponentId);
     });
@@ -81,13 +83,14 @@ export default class MySocket {
 
   handleChallengeRequest() {
     this.socket.on(MESSAGE.US_CHALLENGE, (challenger) => {
+      Utilities.removeActivePopup();
       Utilities.showQuestionPopup(
         `${challenger.username} is challenging you to a game`,
         'Accept', 'Reject',
         () => {
           this.socket.emit(MESSAGE.US_CHALLENGE_RESPONSE, challenger.id, true);
           this.opponentUser = challenger;
-          this.stopListeningOnState(STATE.USER_SELECT);
+          this.stopAllListener();
           Utilities.hideAvailableUsers();
           this.game.setState(STATE.GAME_SETUP);
         },
@@ -106,9 +109,10 @@ export default class MySocket {
         // GAME ON
         this.opponentUser = opponent;
         Utilities.hideAvailableUsers();
-        this.stopListeningOnState(STATE.USER_SELECT);
+        this.stopAllListener();
         this.game.setState(STATE.GAME_SETUP);
       } else {
+        Utilities.removeActivePopup();
         Utilities.showOkayPopup(`${opponent.username} has rejected your challenge`);
       }
     });
@@ -141,9 +145,11 @@ export default class MySocket {
     this.socket.emit(MESSAGE.GS_DONE_SETUP);
     if (this.game.gameConfig.player.opponent.doneSetup) {
       this.game.setTurn('opponent');
+      this.stopAllListener();
       this.game.setState(STATE.IN_GAME);
     } else {
       this.game.setTurn('user');
+      Utilities.removeActivePopup();
       Utilities.showMessagePopup(TEXT.SETUP_WAIT_FOR_OPPONENT);
     }
   }
@@ -152,6 +158,7 @@ export default class MySocket {
     this.socket.on(MESSAGE.GS_DONE_SETUP, () => {
       this.game.setPlayer('opponent', { doneSetup: true });
       if (this.game.gameConfig.player.user.doneSetup) {
+        this.stopAllListener();
         this.game.setState(STATE.IN_GAME);
       }
     });
@@ -159,7 +166,7 @@ export default class MySocket {
 
   handleOpponentDisconnectedSetup() {
     this.socket.on(MESSAGE.DISCONNECTED, (opponent) => {
-      this.stopListeningOnState(STATE.GAME_SETUP);
+      this.stopAllListener();
       Utilities.removeActivePopup();
       Utilities.showOkayPopup(`${opponent.username} is offline!`, () => {
         document.getElementById('in-game').classList.add('hidden');
@@ -174,10 +181,15 @@ export default class MySocket {
   setupStateInGame() {
     this.handleUnderAttack();
     this.handleAttackResponse();
+    this.handleOpponentDisconnectedInGame();
   }
 
   attack(bullet) {
     this.socket.emit(MESSAGE.IG_ATTACK, bullet);
+  }
+
+  endGame() {
+    this.socket.emit(MESSAGE.IG_ENDGAME);
   }
 
   handleUnderAttack() {
@@ -185,22 +197,50 @@ export default class MySocket {
       bullet.type = this.game.getBulletType(bullet.x, bullet.y);
       this.socket.emit(MESSAGE.IG_ATTACK_RESPONSE, bullet);
       this.game.addBullet('user', bullet);
+      if (bullet.type === BULLET_TYPE.HEAD) {
+        this.game.updateLives('user');
+      }
       if (this.game.getHeadBulletAmount('user') >= UI_BOARD.PLANE_AMOUNT) {
+        Utilities.removeActivePopup();
         Utilities.showOkayPopup(TEXT.IG_LOSE, () => {
+          this.stopAllListener();
+          this.game.reset();
+          this.endGame();
+          this.game.setState(STATE.USER_SELECT);
+        });
+      }
+      this.game.setTurn('user');
+    });
+  }
+  
+  handleAttackResponse() {
+    this.socket.on(MESSAGE.IG_ATTACK_RESPONSE, bullet => {
+      this.game.addBullet('opponent', bullet);
+      if (bullet.type === BULLET_TYPE.HEAD) {
+        this.game.updateLives('opponent');
+      }
+      if (this.game.getHeadBulletAmount('opponent') >= UI_BOARD.PLANE_AMOUNT) {
+        Utilities.removeActivePopup();
+        Utilities.showOkayPopup(TEXT.IG_WIN, () => {
+          this.stopAllListener();
+          this.game.reset();
+          this.endGame();
           this.game.setState(STATE.USER_SELECT);
         });
       }
     });
   }
 
-  handleAttackResponse() {
-    this.socket.on(MESSAGE.IG_ATTACK_RESPONSE, bullet => {
-      this.game.addBullet('opponent', bullet);
-      if (this.game.getHeadBulletAmount('opponent') >= UI_BOARD.PLANE_AMOUNT) {
-        Utilities.showOkayPopup(TEXT.IG_WIN, () => {
-          this.game.setState(STATE.USER_SELECT);
-        });
-      }
+  handleOpponentDisconnectedInGame() {
+    this.socket.on(MESSAGE.DISCONNECTED, (opponent) => {
+      this.stopAllListener();
+      Utilities.removeActivePopup();
+      Utilities.showOkayPopup(`${opponent.username} is offline!`, () => {
+        document.getElementById('in-game').classList.add('hidden');
+        this.game.reset();
+        this.endGame();
+        this.game.setState(STATE.USER_SELECT);
+      });
     });
   }
 

@@ -19,6 +19,10 @@ export default class GameManager {
   keyEventCallback;
 
   constructor() {
+    this.reset();
+  }
+
+  reset() {
     this.gameConfig = {
       player: {
         user: {
@@ -56,6 +60,21 @@ export default class GameManager {
       colorDelta: 50,
     };
     this.currentPlane = 0;
+    document.getElementById('in-game').classList.add('hidden');
+    if (this.boardPlayer) {
+      this.boardPlayer.reset();
+    }
+    if (this.boardOpponent) {
+      this.boardOpponent.reset();
+    }
+    if (this.keyEventCallback) {
+      window.removeEventListener('keyup', this.keyEventCallback);
+      this.keyEventCallback = null;
+    }
+    if (this.drawFrameId) {
+      window.cancelAnimationFrame(this.drawFrameId);
+      this.drawFrameId = null;
+    }
   }
 
   start() {
@@ -110,7 +129,7 @@ export default class GameManager {
         }
         this.socket = new MySocket(username, this);
         registerForm.classList.add('hidden');
-        this.stateHandler.next(STATE.USER_SELECT);
+        this.setState(STATE.USER_SELECT);
       }
     );
   }
@@ -290,7 +309,7 @@ export default class GameManager {
     this.boardOpponentDiv.classList.remove('hidden');
     this.boardOpponentDiv = document.getElementById('board-opponent');
     this.boardOpponentDiv.getElementsByClassName('board-info-name')[0].innerHTML = player.opponent.username;
-    this.boardOpponentDiv.getElementsByClassName('board-info-notify')[0].innerHTML = `Lives: <span id="user-lives" class="highlight-red">${player.opponent.lives}</span>`;
+    this.boardOpponentDiv.getElementsByClassName('board-info-notify')[0].innerHTML = `Lives: <span id="opponent-lives" class="highlight-red">${player.opponent.lives}</span>`;
 
     canvas = document.getElementById('canvas-opponent');
     canvas.height = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
@@ -317,9 +336,7 @@ export default class GameManager {
       }
 
       this.boardPlayer.draw();
-      if (this.turn === 'user') {
-        this.boardOpponent.showAimingMark = true;
-      }
+      this.boardOpponent.showAimingMark = this.turn === 'user';
       this.boardOpponent.draw();
       this.drawFrameId = window.requestAnimationFrame(frameDraw);
     }
@@ -351,6 +368,7 @@ export default class GameManager {
         }
         // Send coordinate to opponent
         this.socket.attack({ x: this.boardOpponent.indicator.x, y: this.boardOpponent.indicator.y, type: null});
+        this.setTurn('opponent');
       }
 
       if (
@@ -370,6 +388,9 @@ export default class GameManager {
   }
 
   updateLives(player) {
+    const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
+    const lives = UI_BOARD.PLANE_AMOUNT - board.getHeadBulletAmount();
+    this.setPlayer(player, { lives });
     document.getElementById(`${player}-lives`).innerHTML = this.gameConfig.player[player].lives;
   }
 
@@ -380,6 +401,9 @@ export default class GameManager {
   addBullet(player, bullet) {
     const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
     board.bullets.push(bullet);
+    if (player === 'user' && bullet.type === BULLET_TYPE.HEAD) {
+      board.planes.find(plane => plane.headX === bullet.x && plane.headY === bullet.y).dead = true;
+    }
   }
   
   getDeadPlaneAmount(player) {

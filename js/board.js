@@ -3,7 +3,6 @@ import { UI_BOARD, DIRECTION, PLANE_MATRIX, BULLET_TYPE } from './Config/config.
 export default class Board {
   canvas;
   ctx;
-  active;
   showAimingMark;
   planes = [
     // {
@@ -55,18 +54,28 @@ export default class Board {
     //   type: BULLET_TYPE.HEAD
     // }
   ];
-  indicator = {
-    x: 1,
-    y: 1,
-    color: UI_BOARD.AIMING_MARK_COLOR,
-    offset: 0
-  }
+  indicator;
+  // {
+  //   x: 1,
+  //   y: 1,
+  //   color: UI_BOARD.AIMING_MARK_COLOR,
+  //   offset: 0
+  // }
 
   constructor(canvas) {
     this.setCanvas(canvas);
+    this.reset();
+  }
+
+  reset() {
     this.planes = [];
     this.bullets = [];
-    this.active = true;
+    this.indicator = {
+      x: 1,
+      y: 1,
+      color: UI_BOARD.AIMING_MARK_COLOR,
+      offset: 0
+    };
     this.showAimingMark = false;
   }
 
