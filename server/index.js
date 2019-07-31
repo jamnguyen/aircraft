@@ -26,7 +26,8 @@ const MESSAGE = {
   IG_ATTACK: 'IG_ATTACK',
   IG_ATTACK_RESPONSE: 'IG_ATTACK_RESPONSE',
   IG_RESIGN: 'IG_RESIGN',
-  IG_ENDGAME: 'IG_ENDGAME'
+  IG_ENDGAME: 'IG_ENDGAME',
+  IG_CHAT: 'IG_CHAT'
 }
 const STATUS = {
   AVAILABLE: 'AVAILABLE',
@@ -176,6 +177,16 @@ io.on('connection', (socket) => {
     io.to(user.status).emit(MESSAGE.IG_RESIGN);
   });
 
+  //User chat
+  socket.on(MESSAGE.IG_CHAT, (text) => {
+    const user = users.find(item => item.id === socket.id);
+    if (!user || user.status === STATUS.AVAILABLE) {
+      return;
+    }
+
+    io.to(user.status).emit(MESSAGE.IG_CHAT, text);
+  });
+
   // User end game
   socket.on(MESSAGE.IG_ENDGAME, () => {
     const user = users.find(item => item.id === socket.id);
@@ -214,6 +225,11 @@ io.on('connection', (socket) => {
   });
 });
 
-http.listen(3000, () => {
-  console.log('Listening on port 3000...');
+const port = process.env.PORT || 3000;
+http.listen(port, () => {
+  console.log('Listening on port ' + port + '...');
 });
+
+// setInterval(() => {
+//   http.get("https://jamnguyen-aircraft.herokuapp.com/");
+// }, 300000);

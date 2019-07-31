@@ -16,7 +16,8 @@ export const MESSAGE = {
   IG_ATTACK: 'IG_ATTACK',
   IG_ATTACK_RESPONSE: 'IG_ATTACK_RESPONSE',
   IG_RESIGN: 'IG_RESIGN',
-  IG_ENDGAME: 'IG_ENDGAME'
+  IG_ENDGAME: 'IG_ENDGAME',
+  IG_CHAT: 'IG_CHAT',
 }
 
 export const SERVER = {
@@ -32,7 +33,7 @@ export const STATE = {
 
 // UI CONFIG
 export const UI_BOARD = {
-  CELL_SIZE: 60,
+  CELL_SIZE: 54,
   BOARD_SIZE: 12,
   STROKE_WIDTH: 1,
   STROKE_COLOR: '#000',

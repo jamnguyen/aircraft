@@ -37,6 +37,47 @@ body {
   padding: 30px;
 }
 
+.splash-background {
+  background-color: white;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-title {
+  background: linear-gradient(to bottom right, #ff8800, #cf0000);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 120px;
+  letter-spacing: 3px;
+  padding: 0 10px;
+  padding-bottom: 100px;
+  animation: splash 1.5s ease-in-out;
+}
+
+@keyframes splash {
+  0% {
+    transform: translateY(100px) scale(.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(100px) scale(.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 .popup-background {
   background-color: rgba(0, 0, 0, .5);
   position: absolute;
@@ -180,9 +221,46 @@ body {
 .board-canvas {
 }
 
+.chat-box {
+  transform: translateY(-25px);
+}
 
+.chat-box-input {
+  border: none;
+  border-bottom: #ec4300 1px solid;
+  /* border-radius: 5px; */
+  font-family: 'segoe ui', sans-serif;
+  font-size: 16px;
+  padding: 5px;
+  width: 250px;
+}
 
+.chat-box-button {
+  border: none;
+  border-radius: 5px;
+  background: #ec4300;
+  color: white;
+  font-family: 'segoe ui', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px;
+  cursor: pointer;
+  transition: .2s ease;
+}
 
+.chat-box-button:hover {
+  background: #ec0000;
+}
+
+.chat-box-button:active {
+  transform: translateX(5px);
+}
+
+.chat-message {
+  font-family: 'Sriracha', cursive;
+  font-size: 25px;
+  transform: translateY(-40px);
+}
 
 
 
@@ -209,6 +287,22 @@ body {
   display: none;
 }
 
+.hidden-fade {
+  /* display: none; */
+  animation: hidden-fade .5s ease-out;
+  animation-fill-mode: forwards;
+  -webkit-animation-fill-mode: forwards;
+}
+
 .highlight-red {
   color: #cf0c0c;
+}
+
+@keyframes hidden-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }

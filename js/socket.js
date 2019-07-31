@@ -24,6 +24,7 @@ export default class MySocket {
 
     this.socket.removeAllListeners(MESSAGE.IG_ATTACK);
     this.socket.removeAllListeners(MESSAGE.IG_ATTACK_RESPONSE);
+    this.socket.removeAllListeners(MESSAGE.IG_CHAT);
   }
 
   // ----------------------------------------------------------------------------------
@@ -182,6 +183,7 @@ export default class MySocket {
     this.handleUnderAttack();
     this.handleAttackResponse();
     this.handleOpponentDisconnectedInGame();
+    this.handleChatInGame();
   }
 
   attack(bullet) {
@@ -241,6 +243,16 @@ export default class MySocket {
         this.endGame();
         this.game.setState(STATE.USER_SELECT);
       });
+    });
+  }
+
+  sendChatText(text) {
+    this.socket.emit(MESSAGE.IG_CHAT, text);
+  }
+
+  handleChatInGame() {
+    this.socket.on(MESSAGE.IG_CHAT, (text) => {
+      this.game.setChatText('opponent', text);
     });
   }
 

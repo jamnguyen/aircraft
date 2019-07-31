@@ -1,23 +1,11 @@
-import { MESSAGE, SERVER, STATE } from './Config/config.js';
-import Utilities from './Utilities/utilities.js';
 import GameManager from './game-manager.js';
+var game; 
+setTimeout(() => {
+  document.getElementById('splash').classList.add('hidden-fade');
+  game = new GameManager();
+  game.start();
+}, 3000);
 
-// --------------------------------------------------
-// SETUP
-// --------------------------------------------------
-// const canvas = document.getElementById('canvas');
-// const context = canvas.getContext('2d');
-
-
-
-// --------------------------------------------------
-// ENTRY POINT
-// --------------------------------------------------
-
-// window.addEventListener(
-//   'resize',
-//   () => Utilities.handleResizeWindow(canvas)
-// );
-
-var game = new GameManager();
-game.start();
+setTimeout(() => {
+  document.getElementById('splash').classList.add('hidden');
+}, 4010);

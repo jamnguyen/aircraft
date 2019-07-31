@@ -6,7 +6,7 @@
     <title>Aircraft</title>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="./css/style.css">
-    <link href="https://fonts.googleapis.com/css?family=Fredoka+One|Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Sriracha|Fredoka+One|Luckiest+Guy&display=swap&subset=vietnamese" rel="stylesheet">
     <link rel="stylesheet" href="./vendor/icofont/icofont.min.css">
     <script src="./vendor/SocketIO/socket.io.js"></script>
     <script src="https://unpkg.com/rxjs@6.5.2/bundles/rxjs.umd.min.js"></script>
@@ -20,6 +20,13 @@
           <div class="board-info-notify"></div>
         </div>
         <canvas id="canvas-player" class="board-canvas"></canvas>
+        <div class="chat-message"></div>
+        <div class="chat-box">
+          <form id="chat-form">
+            <input id="chat-box-input" class="chat-box-input" type="text" autocomplete="off">
+            <button class="chat-box-button" type="submit">Send</button>
+          </form>
+        </div>
       </div>
       <div id="board-opponent" class="board hidden">
         <div class="board-info">
@@ -27,6 +34,7 @@
             <div class="board-info-notify">Lives: <span class="highlight-red">2</span></div>
         </div>
         <canvas id="canvas-opponent" class="board-canvas"></canvas>
+        <div class="chat-message"></div>
       </div>
     </div>
 
@@ -35,10 +43,16 @@
       <input class="input" type="text" name="name-input" id="name-input" placeholder="Your name">
       <button class="button" type="submit">Enter the game <i class="icofont-arrow-right"></i></button>
     </form>
+
     <div id="available-users" class="popup hidden">
       <div class="title">Available Users</div>
       <div id="user-list" class="user-list"></div>
     </div>
+
+    <div id="splash" class="splash-background">
+      <div class="splash-title">Aircraft</div>
+    </div>
+
     <script type="module" src="./js/script.js"></script>
   </body>
 

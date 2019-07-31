@@ -170,6 +170,8 @@ export default class GameManager {
     this.boardPlayerDiv = document.getElementById('board-player');
     this.boardPlayerDiv.getElementsByClassName('board-info-name')[0].innerHTML = TEXT.SETUP_TITLE;
     this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_DIRECTION;
+    this.boardPlayerDiv.getElementsByClassName('chat-message')[0].classList.add('hidden');
+    this.boardPlayerDiv.getElementsByClassName('chat-box')[0].classList.add('hidden');
 
     let canvas = document.getElementById('canvas-player');
     canvas.height = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
@@ -284,6 +286,7 @@ export default class GameManager {
   handleStateInGame() {    
     this.handleUIInGame();
     this.handleKeyEventInGame();
+    this.handleChat();
     this.socket.setupStateInGame();
   }
 
@@ -305,6 +308,8 @@ export default class GameManager {
     this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = `Lives: <span id="user-lives" class="highlight-red">${player.user.lives}</span>`;
     let canvas = document.getElementById('canvas-player');
     this.boardPlayer.setCanvas(canvas);
+    this.boardPlayerDiv.getElementsByClassName('chat-message')[0].classList.remove('hidden');
+    this.boardPlayerDiv.getElementsByClassName('chat-box')[0].classList.remove('hidden');
 
     this.boardOpponentDiv.classList.remove('hidden');
     this.boardOpponentDiv = document.getElementById('board-opponent');
@@ -352,6 +357,9 @@ export default class GameManager {
       if (this.turn === 'opponent') {
         return;
       }
+      if (document.activeElement === document.getElementById('chat-box-input')) {
+        return;
+      }
       let dx = 0, dy = 0;
       if (e.keyCode === KEY_EVENT.UP) {
         dy = -1;
@@ -387,6 +395,23 @@ export default class GameManager {
     window.addEventListener('keyup', this.keyEventCallback);
   }
 
+  handleChat() {
+    let chatForm = document.getElementById('chat-form');
+    this.setChatText('user', '');
+    this.setChatText('opponent', '');
+    document.getElementById('chat-box-input').value = '';
+    chatForm.onsubmit = (e) => {
+      e.preventDefault();
+      const text = document.getElementById('chat-box-input').value;
+      if (!text) {
+        return;
+      }
+      this.socket.sendChatText(text);
+      this.setChatText('user', text);
+      document.getElementById('chat-box-input').value = '';
+    };
+  }
+
   updateLives(player) {
     const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
     const lives = UI_BOARD.PLANE_AMOUNT - board.getHeadBulletAmount();
@@ -414,5 +439,10 @@ export default class GameManager {
   getHeadBulletAmount(player) {
     const board = player === 'user' ? this.boardPlayer : this.boardOpponent;
     return board.getHeadBulletAmount();
+  }
+
+  setChatText(player, text) {
+    const boardDiv = player === 'user' ? this.boardPlayerDiv : this.boardOpponentDiv;
+    boardDiv.getElementsByClassName('chat-message')[0].innerHTML = text;
   }
 }
