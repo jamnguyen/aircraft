@@ -26,6 +26,7 @@ const MESSAGE = {
   IG_ATTACK: 'IG_ATTACK',
   IG_ATTACK_RESPONSE: 'IG_ATTACK_RESPONSE',
   IG_RESIGN: 'IG_RESIGN',
+  IG_PLANES: 'IG_PLANES',
   IG_ENDGAME: 'IG_ENDGAME',
   IG_CHAT: 'IG_CHAT'
 }
@@ -185,6 +186,15 @@ io.on('connection', (socket) => {
     }
 
     io.to(user.status).emit(MESSAGE.IG_CHAT, text);
+  });
+
+  // User send planes info to opponent
+  socket.on(MESSAGE.IG_PLANES, (planes) => {
+    const user = users.find(item => item.id === socket.id);
+    if (!user || user.status === STATUS.AVAILABLE) {
+      return;
+    }
+    io.to(user.status).emit(MESSAGE.IG_PLANES, planes);
   });
 
   // User end game

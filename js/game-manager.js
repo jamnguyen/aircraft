@@ -445,4 +445,12 @@ export default class GameManager {
     const boardDiv = player === 'user' ? this.boardPlayerDiv : this.boardOpponentDiv;
     boardDiv.getElementsByClassName('chat-message')[0].innerHTML = text;
   }
+
+  getPlanes() {
+    return this.boardPlayer.planes;
+  }
+
+  setOpponentPlanes(planes) {
+    this.boardOpponent.planes.push(...planes);
+  }
 }

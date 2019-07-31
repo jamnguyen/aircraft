@@ -25,6 +25,7 @@ export default class MySocket {
     this.socket.removeAllListeners(MESSAGE.IG_ATTACK);
     this.socket.removeAllListeners(MESSAGE.IG_ATTACK_RESPONSE);
     this.socket.removeAllListeners(MESSAGE.IG_CHAT);
+    this.socket.removeAllListeners(MESSAGE.IG_PLANES);
   }
 
   // ----------------------------------------------------------------------------------
@@ -184,14 +185,22 @@ export default class MySocket {
     this.handleAttackResponse();
     this.handleOpponentDisconnectedInGame();
     this.handleChatInGame();
+    this.handleGetOpponentPlanes();
   }
 
   attack(bullet) {
     this.socket.emit(MESSAGE.IG_ATTACK, bullet);
   }
 
-  endGame() {
-    this.socket.emit(MESSAGE.IG_ENDGAME);
+  endGame(win) {
+    this.socket.emit(MESSAGE.IG_PLANES, this.game.getPlanes());
+    Utilities.removeActivePopup();
+    Utilities.showOkayPopup(win ? TEXT.IG_WIN : TEXT.IG_LOSE, () => {
+      this.stopAllListener();
+      this.game.reset();
+      this.socket.emit(MESSAGE.IG_ENDGAME);
+      this.game.setState(STATE.USER_SELECT);
+    });
   }
 
   handleUnderAttack() {
@@ -203,13 +212,7 @@ export default class MySocket {
         this.game.updateLives('user');
       }
       if (this.game.getHeadBulletAmount('user') >= UI_BOARD.PLANE_AMOUNT) {
-        Utilities.removeActivePopup();
-        Utilities.showOkayPopup(TEXT.IG_LOSE, () => {
-          this.stopAllListener();
-          this.game.reset();
-          this.endGame();
-          this.game.setState(STATE.USER_SELECT);
-        });
+        this.endGame(false);
       }
       this.game.setTurn('user');
     });
@@ -222,14 +225,14 @@ export default class MySocket {
         this.game.updateLives('opponent');
       }
       if (this.game.getHeadBulletAmount('opponent') >= UI_BOARD.PLANE_AMOUNT) {
-        Utilities.removeActivePopup();
-        Utilities.showOkayPopup(TEXT.IG_WIN, () => {
-          this.stopAllListener();
-          this.game.reset();
-          this.endGame();
-          this.game.setState(STATE.USER_SELECT);
-        });
+        this.endGame(true);
       }
+    });
+  }
+
+  handleGetOpponentPlanes() {
+    this.socket.on(MESSAGE.IG_PLANES, opponentPlanes => {
+      this.game.setOpponentPlanes(opponentPlanes);
     });
   }
 
@@ -240,7 +243,7 @@ export default class MySocket {
       Utilities.showOkayPopup(`${opponent.username} is offline!`, () => {
         document.getElementById('in-game').classList.add('hidden');
         this.game.reset();
-        this.endGame();
+        this.socket.emit(MESSAGE.IG_ENDGAME);
         this.game.setState(STATE.USER_SELECT);
       });
     });
