@@ -130,6 +130,29 @@ body {
   transform: translateY(-1px) scale(1);
 }
 
+.random-shot-button {
+  background: linear-gradient(to bottom right, #ff8800, #cf0000);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-family: 'Fredoka One', cursive;
+  font-size: 25px;
+  padding: 10px 30px;
+  cursor: pointer;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.2s ease-in-out;
+}
+.random-shot-button:hover {
+  background: linear-gradient(to bottom right, #ffae00, #f00000);
+}
+.random-shot-button:active {
+  background: linear-gradient(to bottom right, #d89400, #c70000);
+}
+
 .input {
   border-radius: 5px;
   font-family: 'Fredoka One', cursive;
@@ -190,6 +213,7 @@ body {
   height: 100%;
   width: 100%;
   padding: 50px 0;
+  position: relative;
 }
 
 .board {

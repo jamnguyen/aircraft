@@ -169,6 +169,7 @@ export default class GameManager {
     this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].innerHTML = TEXT.SETUP_DIRECTION;
     this.boardPlayerDiv.getElementsByClassName('chat-message')[0].classList.add('hidden');
     this.boardPlayerDiv.getElementsByClassName('chat-box')[0].classList.add('hidden');
+    document.getElementById('random-shot-button').classList.add('hidden');
 
     let canvas = document.getElementById('canvas-player');
     canvas.height = UI_BOARD.BOARD_SIZE * UI_BOARD.CELL_SIZE;
@@ -283,6 +284,7 @@ export default class GameManager {
     this.handleUIInGame();
     this.handleKeyEventInGame();
     this.handleChat();
+    this.handleRandomShot();
     this.socket.setupStateInGame();
   }
 
@@ -404,6 +406,28 @@ export default class GameManager {
       this.setChatText('user', text);
       document.getElementById('chat-box-input').value = '';
     };
+  }
+
+  handleRandomShot() {
+    let randomBtn = document.getElementById('random-shot-button');
+    randomBtn.classList.remove('hidden');
+    randomBtn.onclick = () => {
+      if (this.turn === 'opponent') {
+        return;
+      }
+
+      let x, y;
+      do {
+        const ran = Math.floor(Math.random() * 89) + 11
+        x = Math.floor(ran / 10);
+        y = ran % 10 + 1;
+      } while (this.boardOpponent.hasBullet(x, y));
+
+      this.boardOpponent.setIndicator({x, y});
+      this.socket.attack({ x: this.boardOpponent.indicator.x, y: this.boardOpponent.indicator.y, type: null});
+      this.setTurn('opponent');
+      document.activeElement.blur();
+    }
   }
 
   updateLives(player) {
