@@ -90,8 +90,8 @@ body {
 
 .popup-message {
   height: auto;
-  padding: 80px 50px;
-  width: 700px;
+  padding: 80px 80px;
+  width: auto;
 }
 
 .title {

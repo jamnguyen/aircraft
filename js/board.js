@@ -288,22 +288,12 @@ export default class Board {
   }
 
   drawBullets() {
-    for (let bullet of this.bullets) {
-      this.drawBullet(bullet);
+    for (let [index, bullet] of this.bullets.entries()) {
+      this.drawBullet(bullet, index === this.bullets.length - 1);
     }
   }
 
-  drawBullet(bullet) {
-    if (bullet.type === BULLET_TYPE.BOARD) {
-      this.ctx.fillStyle = UI_BOARD.BULLET_BOARD_COLOR;
-      this.ctx.strokeStyle = UI_BOARD.BULLET_BOARD_STROKE_COLOR;
-    } else if (bullet.type === BULLET_TYPE.BODY) {
-      this.ctx.fillStyle = UI_BOARD.BULLET_BODY_COLOR;
-      this.ctx.strokeStyle = UI_BOARD.BULLET_BODY_STROKE_COLOR;
-    } else if (bullet.type === BULLET_TYPE.HEAD) {
-      this.ctx.fillStyle = UI_BOARD.BULLET_HEAD_COLOR;
-      this.ctx.strokeStyle = UI_BOARD.BULLET_HEAD_STROKE_COLOR;
-    }
+  drawBullet(bullet, newest) {
     this.ctx.lineWidth = UI_BOARD.BULLET_STROKE_WIDTH;
 
     const x1 = 0, y1 = -8;
@@ -314,6 +304,27 @@ export default class Board {
 
     this.ctx.save();
     this.ctx.translate(bullet.x * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2, bullet.y * UI_BOARD.CELL_SIZE + UI_BOARD.CELL_SIZE / 2);
+    if (newest) {
+      // this.ctx.strokeStyle = UI_BOARD.BULLET_HIGHLIGHT_COLOR;
+      this.ctx.fillStyle = UI_BOARD.BULLET_HIGHLIGHT_COLOR;
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 30, 0, 2 * Math.PI);
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+
+
+    if (bullet.type === BULLET_TYPE.BOARD) {
+      this.ctx.fillStyle = UI_BOARD.BULLET_BOARD_COLOR;
+      this.ctx.strokeStyle = UI_BOARD.BULLET_BOARD_STROKE_COLOR;
+    } else if (bullet.type === BULLET_TYPE.BODY) {
+      this.ctx.fillStyle = UI_BOARD.BULLET_BODY_COLOR;
+      this.ctx.strokeStyle = UI_BOARD.BULLET_BODY_STROKE_COLOR;
+    } else if (bullet.type === BULLET_TYPE.HEAD) {
+      this.ctx.fillStyle = UI_BOARD.BULLET_HEAD_COLOR;
+      this.ctx.strokeStyle = UI_BOARD.BULLET_HEAD_STROKE_COLOR;
+    }
+
     this.ctx.beginPath();
     this.ctx.moveTo(x1, y1);
     this.ctx.lineTo(x2, y2);

@@ -193,6 +193,7 @@ export default class MySocket {
   }
 
   endGame(win) {
+    this.game.stopKeyEventListener();
     this.socket.emit(MESSAGE.IG_PLANES, this.game.getPlanes());
     Utilities.removeActivePopup();
     Utilities.showOkayPopup(win ? TEXT.IG_WIN : TEXT.IG_LOSE, () => {

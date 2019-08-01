@@ -67,10 +67,7 @@ export default class GameManager {
     if (this.boardOpponent) {
       this.boardOpponent.reset();
     }
-    if (this.keyEventCallback) {
-      window.removeEventListener('keyup', this.keyEventCallback);
-      this.keyEventCallback = null;
-    }
+    this.stopKeyEventListener();
     if (this.drawFrameId) {
       window.cancelAnimationFrame(this.drawFrameId);
       this.drawFrameId = null;
@@ -210,9 +207,7 @@ export default class GameManager {
   }
 
   handleKeyEventGameSetup() {
-    if (this.keyEventCallback) {
-      window.removeEventListener('keyup', this.keyEventCallback);
-    }
+    this.stopKeyEventListener();
 
     this.keyEventCallback = (e) => {
       this.boardPlayerDiv.getElementsByClassName('board-info-notify')[0].classList.remove('highlight-red');
@@ -256,6 +251,7 @@ export default class GameManager {
           this.boardPlayer.planes.push({ ...this.gameConfig.defaultPlane });
           direction = this.gameConfig.defaultPlane.direction;
         } else {
+          this.stopKeyEventListener();
           this.socket.doneSetup();
         }
       } else if (e.keyCode === KEY_EVENT.ESCAPE) {
@@ -349,9 +345,7 @@ export default class GameManager {
   }
 
   handleKeyEventInGame() {
-    if (this.keyEventCallback) {
-      window.removeEventListener('keyup', this.keyEventCallback);
-    }
+    this.stopKeyEventListener();
 
     this.keyEventCallback = (e) => {
       if (this.turn === 'opponent') {
@@ -452,5 +446,12 @@ export default class GameManager {
 
   setOpponentPlanes(planes) {
     this.boardOpponent.planes.push(...planes);
+  }
+
+  stopKeyEventListener() {
+    if (this.keyEventCallback) {
+      window.removeEventListener('keyup', this.keyEventCallback);
+      this.keyEventCallback = null;
+    }
   }
 }
