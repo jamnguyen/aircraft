@@ -235,9 +235,9 @@ io.on('connection', (socket) => {
   });
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 http.listen(port, () => {
-  console.log('Listening on port ' + port + '...');
+  console.log('Aircraft is listening on port ' + port + '...');
 });
 
 // setInterval(() => {

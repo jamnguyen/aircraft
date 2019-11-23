@@ -22,8 +22,8 @@ export const MESSAGE = {
 }
 
 export const SERVER = {
-  URL: 'http://localhost:8080',
-  // URL: 'https://aircraft-259909.appspot.com/'
+  // URL: 'http://localhost:8080',
+  URL: 'https://aircraft-259909.appspot.com/'
 }
 
 export const STATE = {

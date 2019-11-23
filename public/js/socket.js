@@ -9,7 +9,7 @@ export default class MySocket {
   game;
 
   constructor(username, gameManager) {
-    this.socket = io(`${SERVER.URL}?username=${username}`);
+    this.socket = io(`${SERVER.URL}?username=${username}`, {transports: ['websocket']});
     this.game = gameManager;
   }
 
